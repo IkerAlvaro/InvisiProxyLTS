@@ -1,9 +1,10 @@
-importScripts('{{route}}{{/scram/controller.sw.js}}');
+import { route } from 'build:invisiproxy';
+importScripts(route("/scram/controller.sw.js"));
 
-const SJ_CONTROLLER_PREFIX = '{{route}}{{/scram/network/}}';
+const SJ_CONTROLLER_PREFIX = route("/scram/network/");
 
 const blacklist = new Set();
-fetch('{{route}}{{/assets/txt/blacklist.txt}}')
+fetch(route("/assets/txt/blacklist.txt"))
   .then((response) => response.text())
   .then((textData) => {
     for (const line of textData.split('\n')) {

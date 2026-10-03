@@ -1,4 +1,5 @@
-importScripts('{{route}}{{/scram/controller.sw.js}}');
+import { route } from 'build:invisiproxy';
+importScripts(route("/scram/controller.sw.js"));
 
 self.addEventListener('fetch', (event) => {
   event.respondWith(

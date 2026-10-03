@@ -1,3 +1,4 @@
+import { values, route, maskText } from 'build:invisiproxy';
 /* -----------------------------------------------
 /* Authors: QuiteAFancyEmerald, Yoct, b4kt, and OlyB
 /* GNU Affero General Public License v3.0: https://www.gnu.org/licenses/agpl-3.0.en.html
@@ -13,7 +14,7 @@
 // To be defined after the document has fully loaded.
 let uvConfig = {};
 let sjBundle = null;
-const FRAME_URL_KEY = '{{hu-lts}}-frame-url';
+const FRAME_URL_KEY = `${values.storageNamespace}-frame-url`;
 const SJ_PREFIX_TAG = 'sj:';
 
 // Get the preferred apex domain name. Not exactly apex, as any
@@ -23,8 +24,8 @@ const getDomain = () =>
   // This is used for stealth mode when visiting external sites.
   goFrame = (url) => {
     localStorage.setItem(FRAME_URL_KEY, url);
-    if (location.pathname !== '{{route}}{{/s}}')
-      location.href = '{{route}}{{/s}}?cache={{cacheVal}}';
+    if (location.pathname !== route("/s"))
+      location.href = route("/s") + (values.development ? '' : `?cache=${values.cacheKey}`);
     else navigateLocalFrame(url);
   },
   navigateLocalFrame = (target) => {
@@ -123,28 +124,28 @@ const getDomain = () =>
 
 /* READ SETTINGS */
 
-const storageId = '{{hu-lts}}-storage',
+const storageId = `${values.storageNamespace}-storage`,
   storageObject = () => JSON.parse(localStorage.getItem(storageId)) || {},
   readStorage = (name) => storageObject()[name];
 
 /* OMNIBOX */
 
 const searchEngines = Object.freeze({
-    '{{Startpage}}': 'startpage.com/sp/search?query=',
-    '{{Google}}': 'google.com/search?q=',
-    '{{Bing}}': 'bing.com/search?q=',
-    '{{DuckDuckGo}}': 'duckduckgo.com/?q=',
-    '{{Brave}}': 'search.brave.com/search?q=',
+    [values.labels["Startpage"]]: 'startpage.com/sp/search?query=',
+    [values.labels["Google"]]: 'google.com/search?q=',
+    [values.labels["Bing"]]: 'bing.com/search?q=',
+    [values.labels["DuckDuckGo"]]: 'duckduckgo.com/?q=',
+    [values.labels["Brave"]]: 'search.brave.com/search?q=',
   }),
-  defaultSearch = '{{defaultSearch}}',
+  defaultSearch = values.defaultSearch,
   autocompletes = Object.freeze({
     // Startpage has used both Google's and Bing's autocomplete.
     // For now, just use Bing.
-    '{{Startpage}}': 'www.bing.com/AS/Suggestions?csr=1&cvid=0&qry=',
-    '{{Google}}': 'www.google.com/complete/search?client=gws-wiz&callback=_&q=',
-    '{{Bing}}': 'www.bing.com/AS/Suggestions?csr=1&cvid=0&qry=',
-    '{{DuckDuckGo}}': 'duckduckgo.com/ac/?q=',
-    '{{Brave}}': 'search.brave.com/api/suggest?q=',
+    [values.labels["Startpage"]]: 'www.bing.com/AS/Suggestions?csr=1&cvid=0&qry=',
+    [values.labels["Google"]]: 'www.google.com/complete/search?client=gws-wiz&callback=_&q=',
+    [values.labels["Bing"]]: 'www.bing.com/AS/Suggestions?csr=1&cvid=0&qry=',
+    [values.labels["DuckDuckGo"]]: 'duckduckgo.com/ac/?q=',
+    [values.labels["Brave"]]: 'search.brave.com/api/suggest?q=',
   }),
   autocompleteUrls = Object.values(autocompletes).map(
     (url) => 'https://' + url
@@ -163,15 +164,15 @@ const searchEngines = Object.freeze({
     return suggestion;
   },
   responseHandlers = Object.freeze({
-    '{{Startpage}}': (jsonData) => responseHandlers['{{Bing}}'](jsonData),
-    '{{Google}}': (jsonData) =>
+    [values.labels["Startpage"]]: (jsonData) => responseHandlers[values.labels["Bing"]](jsonData),
+    [values.labels["Google"]]: (jsonData) =>
       jsonData[0].map(([suggestion]) =>
         formatSuggestion(suggestion, ['<b>', '</b>'])
       ),
-    '{{Bing}}': (jsonData) =>
+    [values.labels["Bing"]]: (jsonData) =>
       jsonData.s.map(({ q }) => formatSuggestion(q, ['\ue000', '\ue001'])),
-    '{{DuckDuckGo}}': (jsonData) => jsonData.map(({ phrase }) => phrase),
-    '{{Brave}}': (jsonData) => jsonData[1],
+    [values.labels["DuckDuckGo"]]: (jsonData) => jsonData.map(({ phrase }) => phrase),
+    [values.labels["Brave"]]: (jsonData) => jsonData[1],
   });
 
 // Get the autocomplete results for a given search query in JSON format.
@@ -353,7 +354,7 @@ const getSearchTemplate = (
  */
 const preparePage = async () => {
   // This won't break the service workers as they store the variable separately.
-  uvConfig = self['{{__uv$config}}'];
+  uvConfig = self[values.uvConfigKey];
 
   if (window.$invisiScramjet?.ready) sjBundle = window.$invisiScramjet;
   else
@@ -630,7 +631,7 @@ const preparePage = async () => {
       AOS.init();
     });
 
-    fetch('{{route}}{{/assets/json/splash.json}}', {
+    fetch(route("/assets/json/splash.json"), {
       mode: 'same-origin',
     }).then((response) => {
       response.json().then((splashList) => {
@@ -642,7 +643,7 @@ const preparePage = async () => {
 
   // Load in relevant JSON files used to organize large sets of data.
   // This first one is for links, whereas the rest are for navigation menus.
-  fetch('{{route}}{{/assets/json/links.json}}', {
+  fetch(route("/assets/json/links.json"), {
     mode: 'same-origin',
   }).then((response) => {
     response.json().then((huLinks) => {
@@ -662,7 +663,7 @@ const preparePage = async () => {
 
     if (navList) {
       // List items stored in JSON format will be returned as a JS object.
-      const data = await fetch(`{{route}}{{/assets/json/}}${filename}.json`, {
+      const data = await fetch(`${route("/assets/json/")}${filename}.json`, {
         mode: 'same-origin',
       }).then((response) => response.json());
 
@@ -695,7 +696,7 @@ const preparePage = async () => {
               (credits = document.createElement('p')));
 
             a.href = '#';
-            img.src = `{{route}}{{/assets/img/}}${dir}/` + item.img;
+            img.src = `${route("/assets/img/")}${dir}/` + item.img;
             title.textContent = item.name;
             desc.textContent = item.description;
             credits.textContent = item.credits;
@@ -703,7 +704,7 @@ const preparePage = async () => {
             if (filename === 'par-nav') {
               if (item.credits === 'truf')
                 desc.innerHTML +=
-                  '<br>{{mask}}{{Credits: Check out the full site at }}<a target="_blank" href="{{route}}{{/truffled}}">{{mask}}{{truffled.lol}}</a> //{{mask}}{{ discord.gg/vVqY36mzvj}}';
+                  `<br>${maskText("Credits: Check out the full site at ")}<a target="_blank" href="${route("/truffled")}">${maskText("truffled.lol")}</a> //${maskText(" discord.gg/vVqY36mzvj")}`;
             }
 
             a.appendChild(img);

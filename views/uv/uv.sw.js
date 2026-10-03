@@ -1,3 +1,5 @@
+import { values, route } from 'build:invisiproxy';
+import { renderProxyError } from 'build:invisiproxy-errors';
 /* -----------------------------------------------
 /* Authors: TitaniumNetwork
 /* GNU Affero General Public License v3.0: https://www.gnu.org/licenses/agpl-3.0.en.html
@@ -35,7 +37,7 @@ const cspHeaders = [
 const emptyMethods = ['GET', 'HEAD'];
 
 class UVServiceWorker extends Ultraviolet.EventEmitter {
-  constructor(config = self['{{__uv$config}}']) {
+  constructor(config = self[values.uvConfigKey]) {
     super();
     if (!config.prefix) config.prefix = '/service/';
     this.config = config;
@@ -432,10 +434,7 @@ function errorTemplate(trace, fetchedURL) {
         uvVersion.textContent = ${JSON.stringify('3.2.7')};
     `;
 
-  return '{{ultraviolet-error}}'.replace(
-    '{{src}}',
-    'data:application/javascript,' + encodeURIComponent(script)
-  );
+  return renderProxyError('ultraviolet', 'data:application/javascript,' + encodeURIComponent(script));
 }
 
 /**

@@ -1,29 +1,27 @@
+import { values, route } from 'build:invisiproxy';
 (() => {
   const swRoutes = {
-      sj: ['{{route}}{{/sw.js}}', '{{route}}{{/sw-blacklist.js}}'],
-      uv: ['{{route}}{{/uv/sw.js}}', '{{route}}{{/uv/sw-blacklist.js}}'],
+      sj: [route("/sw.js"), route("/sw-blacklist.js")],
+      uv: [route("/uv/sw.js"), route("/uv/sw-blacklist.js")],
     },
-    swScope = '{{route}}{{/}}',
-    uvSwScope = '{{route}}{{/uv/}}',
+    swScope = route("/"),
+    uvSwScope = route("/uv/"),
     swAllowedHostnames = ['localhost', '127.0.0.1'],
     wispUrl =
-      (location.protocol === 'https:' ? 'wss' : 'ws') +
-      '://' +
-      location.host +
-      '{{route}}{{/wisp/}}',
+      `${(location.protocol === 'https:' ? 'wss' : 'ws')}://${location.host}${route("/wisp/")}`,
     proxyUrl = {
       tor: 'socks5h://localhost:9050',
       eu: 'socks5h://localhost:7000',
       jp: 'socks5h://localhost:7001',
     },
     transports = {
-      '{{epoxy}}': '{{route}}{{/epoxy/index.mjs}}',
-      '{{libcurl}}': '{{route}}{{/libcurl/index.mjs}}',
+      [values.labels["epoxy"]]: route("/epoxy/index.mjs"),
+      [values.labels["libcurl"]]: route("/libcurl/index.mjs"),
     },
-    storageId = '{{hu-lts}}-storage',
+    storageId = `${values.storageNamespace}-storage`,
     storageObject = () => JSON.parse(localStorage.getItem(storageId)) || {},
     readStorage = (name) => storageObject()[name],
-    defaultMode = '{{epoxy}}';
+    defaultMode = values.labels["epoxy"];
 
   transports.default = transports[defaultMode];
   Object.freeze(transports);
@@ -113,7 +111,7 @@
     plugins.push(
       new $scramjetUtils.CatchEscapedLinksPlugin((url) => {
         try {
-          localStorage.setItem('{{hu-lts}}-frame-url', 'sj:' + url.href);
+          localStorage.setItem(`${values.storageNamespace}-frame-url`, 'sj:' + url.href);
         } catch (e) {}
         return new URL(location.pathname + location.search, location.origin);
       })
@@ -147,7 +145,7 @@
       if (typeof BareMux !== 'undefined')
         try {
           const baremux = new BareMux.BareMuxConnection(
-            '{{route}}{{/baremux/worker.js}}'
+            route("/baremux/worker.js")
           );
           await baremux.setTransport(transportUrl, [transportOptions]);
           await navigator.serviceWorker.register(swRoutes.uv[swVariant()], {
@@ -175,10 +173,10 @@
         serviceworker,
         transport,
         config: {
-          prefix: '{{route}}{{/scram/network/}}',
-          scramjetPath: '{{route}}{{/scram/scramjet.js}}',
-          wasmPath: '{{route}}{{/scram/scramjet.wasm}}',
-          injectPath: '{{route}}{{/scram/controller.inject.js}}',
+          prefix: route("/scram/network/"),
+          scramjetPath: route("/scram/scramjet.js"),
+          wasmPath: route("/scram/scramjet.wasm"),
+          injectPath: route("/scram/controller.inject.js"),
         },
         scramjetConfig: {
           ...defaultConfig,

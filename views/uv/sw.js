@@ -1,6 +1,7 @@
-importScripts('{{route}}{{/uv/uv.bundle.js}}');
-importScripts('{{route}}{{/uv/uv.config.js}}');
-importScripts(self['{{__uv$config}}'].sw || '{{route}}{{/uv/uv.sw.js}}');
+import { values, route } from 'build:invisiproxy';
+importScripts(route("/uv/uv.bundle.js"));
+importScripts(route("/uv/uv.config.js"));
+importScripts(self[values.uvConfigKey].sw || route("/uv/uv.sw.js"));
 
 const uv = new UVServiceWorker();
 

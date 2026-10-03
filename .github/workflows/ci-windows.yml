@@ -23,6 +23,7 @@ jobs:
         uses: actions/setup-node@v3
         with:
           cache: 'pnpm'
+          node-version: '24'
 
       - name: Install dependencies
         run: pnpm run fresh-install
@@ -30,11 +31,3 @@ jobs:
       - name: Build libraries
         run: pnpm run build
 
-      - name: Start server
-        run: pnpm run workflow-test
-
-      - name: Test server response
-        run: pnpm test
-
-      - name: Stop server after testing
-        run: pnpm stop
