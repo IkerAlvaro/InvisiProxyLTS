@@ -20,35 +20,35 @@ export default function Partners() {
 						<div class={'proxy-header text-center'}>
 							<h1 class={'bigtitle'}>Mirror Links</h1>
 							<p>
-								<br />
-								<br />
-								In order to keep using InvisiProxy (if it gets
-								blocked), please join the{' '}
-								<a href={route('/titaniumnetwork-discord')}>
-									{'TN discord'}
-								</a>{' '}
-								to obtain more links.
-								{'\n              '}
-								<br />
-								{
-									'Simply verify your discord account then head over to '
-								}
-								<strong>#panel</strong>
-								{' channel and select '}
-								<code>{'InvisiProxy'}</code>
-								{'.\n              '}
-								<br />
-								The links are restocked from a database monthly
-								so be sure to check back often after restocks!
-								{'\n              '}
-								<br />
-								This is
-								<strong>free to use</strong> for everyone but we
-								also have a{' '}
-								<a href={route('/patreon')}>{'patreon'}</a> if
-								you would like to support the project.
-								{'\n            '}
+								Get a random mirror link to keep using
+								InvisiProxy.
 							</p>
+							<br/>
+							<button
+								id="dispense-link"
+								type="button"
+								class="fancybutton glowbutton link-button"
+								data-endpoint={route('/api/link')}
+							>
+								Get a random link
+							</button>
+							<br />
+							<p
+								id="dispenser-status"
+								role="status"
+							></p>
+							<br />
+							<a
+								id="dispensed-link"
+								hidden
+								target="_blank"
+								rel="noopener noreferrer"
+								style={{ 'overflow-wrap': 'anywhere' }}
+								href={route('/')}
+								aria-label={'link'}
+							>
+								Open mirror link
+							</a>
 						</div>
 						<div class={'proxy-header text-center'}>
 							<h2>Partners Services</h2>
@@ -97,6 +97,7 @@ export default function Partners() {
 			</div>
 			<Inline>
 				<script src={route('assets/js/card.js', 'inline')} />
+				<script src={route('assets/js/link.js', 'inline')} />
 			</Inline>
 		</>
 	);

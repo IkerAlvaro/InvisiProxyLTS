@@ -23,6 +23,7 @@ import {
 } from './routes.ts';
 import { tryReadFile, preloaded404 } from './files.ts';
 import { fileURLToPath } from 'node:url';
+import { registerLinkDispenser } from './link-dispenser.ts';
 
 // Server host and port are configured in config.json, with a PORT override.
 console.log(serverUrl);
@@ -148,6 +149,9 @@ const app = Fastify({
 	serverFactory: serverFactory,
 });
 
+const dispenserPath = `${serverUrl.pathname}api/link`;
+registerLinkDispenser(app, dispenserPath);
+
 if (process.env.INVISIPROXY_VITE_DEV === '1') {
 	app.addHook('onSend', async (_req, reply, payload) => {
 		reply.header('Cache-Control', 'no-store');
@@ -241,6 +245,7 @@ if (config.disguiseFiles) {
 	if (pages.default === 'login') exemptPages.push('');
 
 	app.addHook('preHandler', (req, reply, done) => {
+		if (req.routeOptions.url === dispenserPath) return done();
 		const params = req.params as RouteParams;
 		if (params.modified) return done();
 		const reqPath = new URL(req.url, serverUrl).pathname.slice(
