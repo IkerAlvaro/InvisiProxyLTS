@@ -40,16 +40,13 @@ const targetHostnameForScramjet = (reqUrl) => {
 };
 
 self.addEventListener('fetch', (event) => {
+  if (!$scramjetController.shouldRoute(event)) return;
   event.respondWith(
     (async () => {
-      if ($scramjetController.shouldRoute(event)) {
-        const hostname = targetHostnameForScramjet(event.request.url);
-        if (isBlacklistedDomain(hostname))
-          return new Response(new Blob(), { status: 406 });
-        return $scramjetController.route(event);
-      }
-
-      return fetch(event.request);
+      const hostname = targetHostnameForScramjet(event.request.url);
+      if (isBlacklistedDomain(hostname))
+        return new Response(new Blob(), { status: 406 });
+      return $scramjetController.route(event);
     })()
   );
 });

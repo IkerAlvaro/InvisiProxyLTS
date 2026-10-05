@@ -1472,7 +1472,7 @@ select::after {
 	left: 0;
 	width: 100vw;
 	height: 100dvh;
-	background-color: #0d1117;
+	background-color: rgba(13, 17, 23, 0.65);
 	background-image:
 		radial-gradient(circle, rgba(131, 131, 131, 0.02) 1px, transparent 1px),
 		radial-gradient(circle, rgba(148, 148, 148, 0.02) 1px, transparent 1px);
@@ -1480,7 +1480,7 @@ select::after {
 		0 0,
 		5px 5px;
 	background-size: 10px 10px;
-	z-index: 3;
+	z-index: 1;
 	align-items: center;
 	justify-content: center;
 	display: flex;

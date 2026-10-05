@@ -12,6 +12,7 @@ declare global {
 	interface Window {
 		$invisiScramjet?: InvisiScramjet;
 		$invisiScramjetError?: unknown;
+		$invisiScramjetInitializing?: Promise<void>;
 		loadFull: typeof loadFull;
 	}
 	function tippy(

@@ -30,6 +30,7 @@ const getDomain = () =>
   navigateLocalFrame = (target) => {
     const windowFrame = document.getElementById('frame');
     if (!windowFrame || !target) return;
+    document.getElementsByClassName('loader')[0]?.classList.add('loader-active');
     if (!target.startsWith(SJ_PREFIX_TAG)) {
       windowFrame.src = target;
       return;

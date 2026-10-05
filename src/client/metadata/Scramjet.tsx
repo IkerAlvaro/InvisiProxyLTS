@@ -1,5 +1,6 @@
 import { SEO, Inline, route } from '../document-helpers.tsx';
 import HeadContent from '../components/HeadContent.tsx';
+import ProxyPreloads from '../components/ProxyPreloads.tsx';
 
 export default function ScramjetMetadata() {
 	return (
@@ -13,6 +14,7 @@ export default function ScramjetMetadata() {
 					}
 				/>
 			</SEO>
+			<ProxyPreloads />
 			<HeadContent />
 			<script
 				src={route('/scram/scramjet.js')}

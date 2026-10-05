@@ -11,6 +11,7 @@ import {
 } from 'node:fs';
 import { dirname, join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { brotliCompressSync, constants, gzipSync } from 'node:zlib';
 import { build } from 'vite';
 import type { Plugin } from 'vite';
 import { scramjetPath } from '@mercuryworkshop/scramjet/path';
@@ -319,6 +320,31 @@ export function siteBuildPlugin(): Plugin {
 					'assets/json/splash.json',
 					JSON.stringify(splashRandom)
 				);
+
+				if (process.env.INVISIPROXY_VITE_DEV !== '1') {
+					const compressRuntime = (dir: string) => {
+						for (const entry of readdirSync(dir, {
+							withFileTypes: true,
+						})) {
+							const path = join(dir, entry.name);
+							if (entry.isDirectory()) compressRuntime(path);
+							else if (/\.(?:m?js|wasm)$/.test(entry.name)) {
+								const source = readFileSync(path);
+								writeFileSync(`${path}.gz`, gzipSync(source));
+								writeFileSync(
+									`${path}.br`,
+									brotliCompressSync(source, {
+										params: {
+											[constants.BROTLI_PARAM_QUALITY]: 4,
+										},
+									})
+								);
+							}
+						}
+					};
+					for (const prefix of ['scram', 'libcurl'])
+						compressRuntime(join(dist, prefix));
+				}
 
 				if (config.disguiseFiles) {
 					const compress = async (dir: string, recursive = false) => {

@@ -2,7 +2,7 @@ import assert from 'node:assert/strict';
 import { readFile, readdir, writeFile } from 'node:fs/promises';
 import { basename, dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { gunzipSync } from 'node:zlib';
+import { brotliDecompressSync, gunzipSync } from 'node:zlib';
 import { parse, type DefaultTreeAdapterTypes } from 'parse5';
 
 const load = <T>(path: string): Promise<T> =>
@@ -117,6 +117,27 @@ try {
 		);
 		assert.equal(response.statusCode, 200, `${prefix}/${name}`);
 		assert.ok(response.rawPayload.length > 0);
+		for (const encoding of ['br', 'gzip']) {
+			const compressed = await app.inject({
+				url:
+					getAltPrefix(prefix, base) +
+					(flatAltPaths[`files/${name}`] || name),
+				headers: { 'accept-encoding': encoding },
+			});
+			assert.equal(compressed.statusCode, 200);
+			assert.equal(compressed.headers['content-encoding'], encoding);
+			assert.match(String(compressed.headers.vary), /Accept-Encoding/i);
+			assert.deepEqual(
+				encoding === 'br'
+					? brotliDecompressSync(compressed.rawPayload)
+					: gunzipSync(compressed.rawPayload),
+				response.rawPayload,
+				`${prefix}/${name}: ${encoding} preserves runtime bytes`
+			);
+			assert.ok(
+				compressed.rawPayload.length < response.rawPayload.length
+			);
+		}
 	}
 	for (const name of [
 		'common.js',

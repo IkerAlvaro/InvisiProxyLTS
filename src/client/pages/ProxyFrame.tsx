@@ -95,18 +95,11 @@ export default function ProxyFrame() {
         history.forward();
       });
       reloadArrow.addEventListener('click', () => {
+        loader.classList.add('loader-active');
         windowFrame.contentWindow.location.reload();
       });
 
       let statusObject = { isLoading: true, timesErrored: 0 };
-
-      const loaderTimeout = (timeout) => {
-        statusObject.isLoading = true;
-        setTimeout(() => {
-          if (statusObject.isLoading)
-            loader.classList.toggle('loader-active', false);
-        }, timeout);
-      };
 
       const errorRefresh = () => {
         const shouldRefresh =
@@ -137,34 +130,35 @@ export default function ProxyFrame() {
 
       const loader = document.getElementsByClassName('loader')[0];
       const updateLoader = () => {
-        if (windowFrame.contentWindow.location.href === 'about:blank') return;
+        const frameDocument = windowFrame.contentDocument;
+        if (frameDocument?.URL === 'about:blank') return;
 
         statusObject.isLoading =
-          windowFrame.contentWindow.document.readyState === 'loading';
+          frameDocument ? frameDocument.readyState !== 'complete' : false;
 
         // Do not remove the loading screen if the page is an error page
         // and should be reloaded.
-        if (!statusObject.isLoading && errorRefresh()) {
+        if (!statusObject.isLoading && frameDocument && errorRefresh()) {
           statusObject.isLoading = true;
           return;
         }
 
         // Display the loading screen if statusObject.isLoading is true.
         loader.classList.toggle('loader-active', statusObject.isLoading);
-
-        // Remove the loading screen if it takes longer than 10 seconds.
-        if (statusObject.isLoading) loaderTimeout(10000);
       };
 
       // Reattach load events whenever the content window has changed.
       const loadHandler = () => {
         setTimeout(() => {
+          const frameDocument = windowFrame.contentDocument;
+          if (!frameDocument) {
+            updateLoader();
+            return;
+          }
           windowFrame.contentWindow.addEventListener('beforeunload', () => {
             loader.classList.toggle('loader-active', true);
-            loaderTimeout(5000);
           });
-          windowFrame.contentWindow.addEventListener('unload', loadHandler);
-          windowFrame.contentWindow.addEventListener(
+          frameDocument.addEventListener(
             'readystatechange',
             updateLoader
           );
@@ -173,7 +167,7 @@ export default function ProxyFrame() {
         });
       };
 
-      windowFrame.addEventListener('load', updateLoader);
+      windowFrame.addEventListener('load', loadHandler);
       loadHandler();
     `}
 			/>

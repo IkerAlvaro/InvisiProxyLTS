@@ -54,7 +54,9 @@ import { values, route } from 'build:invisiproxy';
     await navigator.serviceWorker.ready;
     if (!navigator.serviceWorker.controller) {
       await new Promise((resolve) => {
+        let timer;
         const onChange = () => {
+          clearTimeout(timer);
           navigator.serviceWorker.removeEventListener(
             'controllerchange',
             onChange
@@ -66,7 +68,8 @@ import { values, route } from 'build:invisiproxy';
           onChange,
           { once: true }
         );
-        setTimeout(resolve, 5000);
+        timer = setTimeout(onChange, 5000);
+        if (navigator.serviceWorker.controller) onChange();
       });
     }
 
@@ -127,7 +130,10 @@ import { values, route } from 'build:invisiproxy';
       console.log('Using proxy:', transportOptions.proxy);
       console.log('Transport mode:', transportUrl);
 
-      const registration = await registerScramjetSW();
+      const [registration, transport] = await Promise.all([
+        registerScramjetSW(),
+        buildScramjetTransport(transportOptions),
+      ]);
 
       const serviceworker =
         navigator.serviceWorker.controller ?? registration.active;
@@ -136,7 +142,6 @@ import { values, route } from 'build:invisiproxy';
 
       const { Controller } = $scramjetController;
       const { defaultConfig } = $scramjet;
-      const transport = await buildScramjetTransport(transportOptions);
       const controller = new Controller({
         serviceworker,
         transport,
@@ -156,20 +161,20 @@ import { values, route } from 'build:invisiproxy';
         },
       });
 
-      await Promise.race([
-        controller.wait(),
-        new Promise((_, reject) =>
-          setTimeout(
-            () =>
-              reject(
-                new Error(
-                  'Scramjet controller handshake timed out'
-                )
-              ),
-            15000
-          )
-        ),
-      ]);
+      let handshakeTimer;
+      try {
+        await Promise.race([
+          controller.wait(),
+          new Promise((_, reject) => {
+            handshakeTimer = setTimeout(
+              () => reject(new Error('Scramjet controller handshake timed out')),
+              15000
+            );
+          }),
+        ]);
+      } finally {
+        clearTimeout(handshakeTimer);
+      }
       console.log('Scramjet controller initialized');
 
       const visibleFrame = document.getElementById('frame');
@@ -200,5 +205,13 @@ import { values, route } from 'build:invisiproxy';
     }
   };
 
-  initialize();
+  if (window.$invisiScramjetInitializing) {
+    window.$invisiScramjetInitializing.then(() => {
+      if (window.$invisiScramjet?.ready) initialize();
+    });
+  } else {
+    window.$invisiScramjetInitializing = initialize().finally(() => {
+      delete window.$invisiScramjetInitializing;
+    });
+  }
 })();

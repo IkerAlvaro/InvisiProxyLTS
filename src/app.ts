@@ -73,6 +73,12 @@ export function createSiteApp(options: AppOptions = {}) {
 			),
 			prefix: getAltPrefix(prefix, serverUrl.pathname),
 			decorateReply: false,
+			preCompressed:
+				prefix !== 'assets' && process.env.INVISIPROXY_VITE_DEV !== '1',
+			setHeaders(response) {
+				if (prefix !== 'assets')
+					response.setHeader('Vary', 'Accept-Encoding');
+			},
 		});
 	});
 

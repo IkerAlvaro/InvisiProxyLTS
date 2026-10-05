@@ -1,5 +1,6 @@
 import { SEO, Inline, route } from '../document-helpers.tsx';
 import HeadContent from '../components/HeadContent.tsx';
+import ProxyPreloads from '../components/ProxyPreloads.tsx';
 
 export default function YouTubeMetadata() {
 	return (
@@ -13,6 +14,7 @@ export default function YouTubeMetadata() {
 					}
 				/>
 			</SEO>
+			<ProxyPreloads />
 			<HeadContent />
 			<script
 				src={

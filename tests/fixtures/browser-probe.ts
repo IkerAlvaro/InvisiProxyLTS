@@ -310,6 +310,57 @@ try {
 			)
 		)
 	);
+	await page.route('**/loading-frame-test', (request) =>
+		request.fulfill({
+			contentType: 'text/html',
+			body: '<!doctype html><p>Loading fixture content</p><script defer src="loading-frame-test.js"></script>',
+		})
+	);
+	for (const reload of [false, true]) {
+		let releaseFrame!: () => void;
+		const loading = new Promise<void>((resolve) => {
+			releaseFrame = resolve;
+		});
+		await page.route('**/loading-frame-test.js', async (request) => {
+			await loading;
+			await request.fulfill({
+				contentType: 'application/javascript',
+				body: '',
+			});
+		});
+		if (reload) await page.locator('#omnibar-reload').click();
+		else
+			await page.locator('#frame').evaluate((frame, src) => {
+				(frame as HTMLIFrameElement).src = src;
+			}, `${base}loading-frame-test`);
+		await page
+			.frameLocator('#frame')
+			.getByText('Loading fixture content')
+			.waitFor();
+		const overlay = page.locator(`.${classes.loader}`);
+		await page.waitForFunction(
+			({ loader, active }) =>
+				document
+					.querySelector(`.${loader}`)
+					?.classList.contains(active),
+			{ loader: classes.loader, active: classes['loader-active'] }
+		);
+		assert.equal(
+			await overlay.evaluate(
+				(element) => getComputedStyle(element).backgroundColor
+			),
+			'rgba(13, 17, 23, 0.65)'
+		);
+		releaseFrame();
+		await page.waitForFunction(
+			({ loader, active }) =>
+				!document
+					.querySelector(`.${loader}`)
+					?.classList.contains(active),
+			{ loader: classes.loader, active: classes['loader-active'] }
+		);
+		await page.unroute('**/loading-frame-test.js');
+	}
 	await page.goto(route('pages/proxnav/preset/youtube.html'));
 	await page.locator('#pr-yt').waitFor();
 	await page.locator('#pr-yt').click();
@@ -325,6 +376,53 @@ try {
 			)
 		)
 	);
+	const runtimeContext = await browser.newContext();
+	await runtimeContext.route('**/*', (request) =>
+		new URL(request.request().url()).origin === origin
+			? request.continue()
+			: request.fulfill({
+					status: 200,
+					contentType: 'application/javascript',
+					body: '',
+				})
+	);
+	await runtimeContext.addInitScript(() => {
+		Object.assign(window, {
+			AOS: { init() {}, refresh() {} },
+			tippy: () => [],
+			loadFull: async () => {},
+			tsParticles: { load: async () => ({ destroy() {} }) },
+		});
+	});
+	const runtimePage = await runtimeContext.newPage();
+	if (config.disguiseFiles) {
+		await runtimePage.goto(`${base}login`);
+		await runtimePage.waitForURL(
+			(url) => url.pathname === `${serverUrl.pathname}index`
+		);
+	}
+	await runtimePage.goto(route('pages/proxnav/scramjet.html'));
+	await runtimePage.waitForFunction(
+		() => window.$invisiScramjet?.ready === true
+	);
+	await runtimePage.locator('#search-input').fill('https://example.com/');
+	await runtimePage.locator('#search-input').press('Enter');
+	await runtimePage.waitForURL(
+		(url) => url.pathname === new URL(route('pages/frame.html')).pathname
+	);
+	await runtimePage.waitForFunction(
+		() =>
+			window.$invisiScramjet?.ready === true &&
+			window.$invisiScramjet.frame.element ===
+				document.getElementById('frame')
+	);
+	assert.equal(
+		await runtimePage.evaluate(
+			() => window.$invisiScramjetError === undefined
+		),
+		true
+	);
+	await runtimeContext.close();
 	console.log(
 		'Mirror success, cooldown, pending/error/unsafe responses, styling, loader, FAQ hydration persistent tab settings and proxy URL/navigation boundaries passed.'
 	);
