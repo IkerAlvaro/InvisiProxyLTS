@@ -106,8 +106,8 @@ pnpm dev`}</code>
 			</pre>
 			<p>
 				{'\n  '}
-				This website is hosted locally with Scramjet, Ultraviolet, Wisp,
-				Bare-Mux, EpoxyTransport, and LibcurlTransport built-in.
+				This website is hosted locally with Scramjet, Wisp, Proxy
+				Transports, and LibcurlTransport built-in.
 				{'\n'}
 			</p>
 			<h3>{'Configuration'}</h3>
@@ -159,24 +159,15 @@ pnpm dev`}</code>
 				assigned via the Settings menu is{' '}
 				<code>{'./views/assets/js/register-sw.js'}</code>
 				{'.'} Here you can modify the provided transport options set
-				locally via a cookie, swap out SOCKS5 proxies, change Onion
+				locally via localStorage, swap out SOCKS5 proxies, change Onion
 				routing ports, specify a blacklist, and more.
 				{'\n'}
 			</p>
 			<ul>
 				<li>
-					<code>{'stockSW'}</code>
-					{': '}
-					The default service worker configuration file for
-					Ultraviolet. For InvisiProxy however adblocking is
-					automatically enabled so this is not used by default.
-					{'\n  '}
-				</li>
-				<li>
-					<code>{'blacklistSW'}</code>
-					{': '}A modified version of Ultraviolet that allows for
-					blacklisting domains and adblocking.
-					{'\n  '}
+					<code>{'getSWRoute'}</code>
+					{': '}Selects the Scramjet service worker based on adblocking.
+					Adblocking is enabled by default.
 				</li>
 				<li>
 					<code>{'proxyUrl'}</code>
@@ -186,9 +177,9 @@ pnpm dev`}</code>
 					{'\n  '}
 				</li>
 				<li>
-					<code>{'transports'}</code>
-					{':'} Specifies any provided ports to be swapped via
-					Bare-Mux and utilize Wisp.
+					<code>{'transportUrl'}</code>
+					{':'} The Libcurl module implementing Proxy Transports for
+					use with Wisp. All browsers use this transport.
 					{'\n  '}
 				</li>
 				<li>
@@ -196,19 +187,18 @@ pnpm dev`}</code>
 					{':'} Modify the pathname or url handling for Wisp
 				</li>
 				<li>
-					<code>{'defaultMode'}</code>
-					{':'} Specify the default transport used globally (can be
-					swapped by the users still via the Settings menu)
+					<code>{'getTransportOptions'}</code>
+					{':'} Configures Wisp and the optional SOCKS5 proxy for
+					Libcurl.
 					{'\n  '}
 				</li>
 				<li>
-					<code>{'ScramjetController'}</code>
+					<code>{'Controller'}</code>
 					{':'} This constructor allows you to swap out the prefix
-					used for Scramjet dynamically and specify file locations.
-					Note you may need to edit{' '}
-					<code>{'./views/scram/scramjet.sw'}</code>
-					when changing file names.
-					{'\n  '}
+					used for Scramjet dynamically and specify file locations. It
+					accepts an initialized Proxy Transports transport directly.
+					The worker entry points are <code>{'views/sw.js'}</code> and{' '}
+					<code>{'views/sw-blacklist.js'}</code>.{'\n  '}
 				</li>
 			</ul>
 		</>

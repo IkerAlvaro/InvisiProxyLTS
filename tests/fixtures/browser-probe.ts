@@ -6,7 +6,7 @@ const load = <T>(path: string): Promise<T> =>
 	import(pathToFileURL(join(process.cwd(), path)).href);
 const { createSiteApp } =
 	await load<typeof import('../../src/app.ts')>('src/app.ts');
-const { config, pages, serverUrl, getAltPrefix } =
+const { config, pages, serverUrl } =
 	await load<typeof import('../../src/site-config.ts')>('src/site-config.ts');
 const app = createSiteApp();
 let browser: Browser | undefined;
@@ -198,85 +198,100 @@ try {
 			).length === 1
 	);
 
-	for (const engine of ['ultraviolet', 'scramjet']) {
-		await page.goto(route(`pages/proxnav/${engine}.html`));
-		await page.locator('#search-input').waitFor();
-		await page.waitForFunction((engine) => {
+	await page.evaluate(() => {
+		const key = Object.keys(localStorage).find((key) =>
+			key.endsWith('-storage')
+		);
+		if (!key) throw new Error('Missing settings storage');
+		localStorage.setItem(
+			key,
+			JSON.stringify({
+				...JSON.parse(localStorage.getItem(key) || '{}'),
+				Transport: 'retired-transport',
+			})
+		);
+	});
+	await page.goto(`${base}browsing`);
+	await page.waitForURL(
+		(url) =>
+			url.pathname ===
+			new URL(route('pages/proxnav/scramjet.html')).pathname
+	);
+	await page.locator('#search-input').waitFor();
+	await page.waitForFunction(() => {
+		const key = Object.keys(localStorage).find((key) =>
+			key.endsWith('-storage')
+		);
+		return key && !JSON.parse(localStorage.getItem(key) || '{}').Transport;
+	});
+	assert.equal(await page.locator('#wisp-libcurl').isChecked(), true);
+	await page.waitForFunction(() => {
+		const el = document.querySelector<HTMLInputElement>('#search-input');
+		if (!el) throw new Error('Missing search input');
+		el.value = 'https://ready.example/';
+		el.dispatchEvent(
+			new KeyboardEvent('keydown', {
+				code: 'Validator Test',
+				bubbles: true,
+			})
+		);
+		return el.value.startsWith('sj:');
+	});
+	for (const [input, expected] of [
+		['https://example.com/path?q=1', 'https://example.com/path?q=1'],
+		['example.com', 'http://example.com/'],
+		['two words & symbols', null],
+	] as const) {
+		const resolved = await page.evaluate((input) => {
 			const el =
 				document.querySelector<HTMLInputElement>('#search-input');
 			if (!el) throw new Error('Missing search input');
-			el.value = 'https://ready.example/';
+			el.value = input;
 			el.dispatchEvent(
 				new KeyboardEvent('keydown', {
 					code: 'Validator Test',
 					bubbles: true,
 				})
 			);
-			return engine === 'scramjet'
-				? el.value.startsWith('sj:')
-				: el.value.startsWith(location.origin);
-		}, engine);
-		for (const [input, expected] of [
-			['https://example.com/path?q=1', 'https://example.com/path?q=1'],
-			['example.com', 'http://example.com/'],
-			['two words & symbols', null],
-		] as const) {
-			const resolved = await page.evaluate((input) => {
-				const el =
-					document.querySelector<HTMLInputElement>('#search-input');
-				if (!el) throw new Error('Missing search input');
-				el.value = input;
-				el.dispatchEvent(
-					new KeyboardEvent('keydown', {
-						code: 'Validator Test',
-						bubbles: true,
-					})
-				);
-				return el.value;
-			}, input);
-			let target: string;
-			if (engine === 'scramjet') {
-				assert.ok(resolved.startsWith('sj:'));
-				target = resolved.slice(3);
-			} else {
-				const prefix =
-					origin +
-					getAltPrefix('uv', serverUrl.pathname) +
-					'service/';
-				assert.ok(resolved.startsWith(prefix), resolved);
-				target = [...decodeURIComponent(resolved.slice(prefix.length))]
-					.map((char, i) =>
-						i % 2
-							? String.fromCharCode(char.charCodeAt(0) ^ 2)
-							: char
-					)
-					.join('');
-			}
-			if (expected) assert.equal(target, expected);
-			else {
-				assert.equal(new URL(target).protocol, 'https:');
-				assert.ok(target.includes(encodeURIComponent(input)));
-			}
+			return el.value;
+		}, input);
+		assert.ok(resolved.startsWith('sj:'));
+		const target = resolved.slice(3);
+		if (expected) assert.equal(target, expected);
+		else {
+			assert.equal(new URL(target).protocol, 'https:');
+			assert.ok(target.includes(encodeURIComponent(input)));
 		}
-		await page.locator('#search-input').fill('https://example.com/');
-		await page.locator('#search-input').press('Enter');
-		await page.waitForURL(
-			(url) =>
-				url.pathname === new URL(route('pages/frame.html')).pathname
-		);
-		assert.ok(
-			await page.evaluate(() =>
-				Object.keys(localStorage).some(
-					(key) =>
-						key.endsWith('-frame-url') &&
-						(localStorage[key].startsWith(
-							'sj:https://example.com/'
-						) ||
-							localStorage[key].startsWith(location.origin))
-				)
-			)
-		);
 	}
+	await page.locator('#search-input').fill('https://example.com/');
+	await page.locator('#search-input').press('Enter');
+	await page.waitForURL(
+		(url) => url.pathname === new URL(route('pages/frame.html')).pathname
+	);
+	assert.ok(
+		await page.evaluate(() =>
+			Object.keys(localStorage).some(
+				(key) =>
+					key.endsWith('-frame-url') &&
+					localStorage[key].startsWith('sj:https://example.com/')
+			)
+		)
+	);
+	await page.goto(route('pages/proxnav/preset/youtube.html'));
+	await page.locator('#pr-yt').waitFor();
+	await page.locator('#pr-yt').click();
+	await page.waitForURL(
+		(url) => url.pathname === new URL(route('pages/frame.html')).pathname
+	);
+	assert.ok(
+		await page.evaluate(() =>
+			Object.keys(localStorage).some(
+				(key) =>
+					key.endsWith('-frame-url') &&
+					localStorage[key] === 'sj:https://youtube.com/'
+			)
+		)
+	);
 	console.log(
 		'Mirror success, cooldown, pending/error/unsafe responses, styling, loader, FAQ hydration persistent tab settings and proxy URL/navigation boundaries passed.'
 	);

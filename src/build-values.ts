@@ -30,7 +30,6 @@ const names = {
 	Google: 'Google',
 	'wisp-transport': 'wst',
 	libcurl: 'unix',
-	epoxy: 'epoch',
 	'hu-lts': 'net-time',
 };
 
@@ -51,9 +50,6 @@ export const buildValues: SiteValues = {
 	version: String(versionValue),
 	cacheKey: crypto.getRandomValues(new Uint32Array(1))[0],
 	storageNamespace: labels['hu-lts'],
-	uvConfigKey: config.randomizeIdentifiers
-		? `uv-${crypto.randomUUID()}`
-		: '__uv$config',
 	labels,
 	defaultSearch: labels.DuckDuckGo,
 	splash: [...splashRandom],
@@ -90,28 +86,20 @@ export const buildValues: SiteValues = {
 export function errorDocuments(
 	documents: Record<string, string>
 ): SiteValues['errors'] {
-	return Object.fromEntries(
-		Object.entries({
-			ultraviolet: 'pages/proxnav/ultraviolet-error.html',
-			scramjet: 'pages/proxnav/scramjet-error.html',
-		}).map(([kind, path]) => {
-			const html = documents[path];
-			const script =
-				/<script\b[^>]*\bid="proxy-error-script"[^>]*\bsrc="([^"]*)"[^>]*>/g.exec(
-					html
-				);
-			if (!script)
-				throw new Error(`Missing error script element in ${path}`);
-			const offset = script.index + script[0].indexOf('src="') + 5;
-			return [
-				kind,
-				{
-					beforeScript: html.slice(0, offset),
-					afterScript: html.slice(offset + script[1].length),
-				},
-			];
-		})
-	);
+	const path = 'pages/proxnav/scramjet-error.html';
+	const html = documents[path];
+	const script =
+		/<script\b[^>]*\bid="proxy-error-script"[^>]*\bsrc="([^"]*)"[^>]*>/.exec(
+			html
+		);
+	if (!script) throw new Error(`Missing error script element in ${path}`);
+	const offset = script.index + script[0].indexOf('src="') + 5;
+	return {
+		scramjet: {
+			beforeScript: html.slice(0, offset),
+			afterScript: html.slice(offset + script[1].length),
+		},
+	};
 }
 
 setSiteValues(buildValues);

@@ -98,7 +98,7 @@ export default function Credits() {
 							</li>
 							<li>
 								{'\n              '}
-								percs (Scramjet, Ultraviolet, Wisp, Mercury
+								percs (Scramjet, Wisp, Mercury
 								Workshop, Developer)
 								{'\n            '}
 							</li>

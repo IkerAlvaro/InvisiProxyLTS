@@ -8,8 +8,6 @@ import Loader from './pages/Loader.tsx';
 import LoaderMetadata from './metadata/Loader.tsx';
 import ScramjetError from './pages/ScramjetError.tsx';
 import ScramjetErrorMetadata from './metadata/ScramjetError.tsx';
-import UltravioletError from './pages/UltravioletError.tsx';
-import UltravioletErrorMetadata from './metadata/UltravioletError.tsx';
 import Home from './pages/Home.tsx';
 import HomeMetadata from './metadata/Home.tsx';
 import DocumentationPage from './pages/DocumentationPage.tsx';
@@ -18,8 +16,6 @@ import FAQPage from './pages/FAQPage.tsx';
 import FAQPageMetadata from './metadata/FAQPage.tsx';
 import NotFound from './pages/NotFound.tsx';
 import NotFoundMetadata from './metadata/NotFound.tsx';
-import Browser from './pages/Browser.tsx';
-import BrowserMetadata from './metadata/Browser.tsx';
 import ProxyFrame from './pages/ProxyFrame.tsx';
 import ProxyFrameMetadata from './metadata/ProxyFrame.tsx';
 import Credits from './pages/Credits.tsx';
@@ -30,8 +26,6 @@ import Partners from './pages/Partners.tsx';
 import PartnersMetadata from './metadata/Partners.tsx';
 import Icons from './pages/Icons.tsx';
 import IconsMetadata from './metadata/Icons.tsx';
-import Ultraviolet from './pages/Ultraviolet.tsx';
-import UltravioletMetadata from './metadata/Ultraviolet.tsx';
 import Scramjet from './pages/Scramjet.tsx';
 import ScramjetMetadata from './metadata/Scramjet.tsx';
 import YouTube from './pages/YouTube.tsx';
@@ -58,10 +52,6 @@ export const pageDefinitions = {
 		Page: ScramjetError,
 		Head: ScramjetErrorMetadata,
 	},
-	'pages/proxnav/ultraviolet-error.html': {
-		Page: UltravioletError,
-		Head: UltravioletErrorMetadata,
-	},
 	'index.html': { Page: Home, Head: HomeMetadata, lang: 'en' },
 	'docs.html': { Page: DocumentationPage, Head: DocumentationPageMetadata },
 	'faq.html': {
@@ -77,16 +67,11 @@ export const pageDefinitions = {
 		],
 	},
 	'error.html': { Page: NotFound, Head: NotFoundMetadata },
-	'pages/surf.html': { Page: Browser, Head: BrowserMetadata, lang: 'en' },
 	'pages/frame.html': { Page: ProxyFrame, Head: ProxyFrameMetadata },
 	'pages/nav/credits.html': { Page: Credits, Head: CreditsMetadata },
 	'pages/nav/privacy.html': { Page: Privacy, Head: PrivacyMetadata },
 	'pages/nav/partners.html': { Page: Partners, Head: PartnersMetadata },
 	'pages/nav/icons.html': { Page: Icons, Head: IconsMetadata },
-	'pages/proxnav/ultraviolet.html': {
-		Page: Ultraviolet,
-		Head: UltravioletMetadata,
-	},
 	'pages/proxnav/scramjet.html': { Page: Scramjet, Head: ScramjetMetadata },
 	'pages/proxnav/preset/youtube.html': {
 		Page: YouTube,

@@ -34,12 +34,6 @@ export default function PartnersMetadata() {
 				data-module={''}
 				innerHTML={''}
 			/>
-			<script
-				src={route('/baremux/index.js')}
-				defer={true}
-				data-module={''}
-				innerHTML={''}
-			/>
 			<Inline>
 				<script
 					src={route('/assets/js/register-sw.js', 'inline')}

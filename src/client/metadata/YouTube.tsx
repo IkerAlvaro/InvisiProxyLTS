@@ -34,30 +34,6 @@ export default function YouTubeMetadata() {
 				data-module={''}
 				innerHTML={''}
 			/>
-			<script
-				src={route('/baremux/index.js')}
-				defer={true}
-				data-module={''}
-				innerHTML={''}
-			/>
-			<script
-				src={route('/epoxy/index.js')}
-				defer={true}
-				data-module={''}
-				innerHTML={''}
-			/>
-			<script
-				src={route('/uv/uv.bundle.js')}
-				defer={true}
-				data-module={''}
-				innerHTML={''}
-			/>
-			<script
-				src={route('/uv/uv.config.js')}
-				defer={true}
-				data-module={''}
-				innerHTML={''}
-			/>
 			<Inline>
 				<script
 					src={route('/assets/js/register-sw.js', 'inline')}

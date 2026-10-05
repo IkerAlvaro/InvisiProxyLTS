@@ -27,42 +27,6 @@ export default function Settings() {
 						<input type={'submit'} value={'Apply'} />
 					</form>
 					<a href={route('/questions')}>Find Icon URL</a>
-					<p class={'cseltitle'}>Wisp Protocol Transport</p>
-					<div
-						class={`radio-group ${values.labels['wisp-transport']}-list`}
-					>
-						<label>
-							<p>
-								{'\n            '}
-								Libcurl
-								{'\n            '}
-								<span class={'default-badge'}>
-									Cross-Browser/Secure (Firefox)
-								</span>
-							</p>
-							<input
-								type={'radio'}
-								name={values.labels['wisp-transport']}
-								value={values.labels.libcurl}
-								checked={true}
-							/>
-						</label>
-						<label>
-							<p>
-								{'\n            '}
-								Epoxy
-								{'\n            '}
-								<span class={'alt-badge'}>
-									Fastest/Secure (Chromium, Apple)
-								</span>
-							</p>
-							<input
-								type={'radio'}
-								name={values.labels['wisp-transport']}
-								value={values.labels.epoxy}
-							/>
-						</label>
-					</div>
 					<p class={'cseltitle'}>{'Advanced Options'}</p>
 					<div class={'radio-group'}>
 						<label>

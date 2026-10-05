@@ -20,8 +20,8 @@ export default function NotFound() {
 					</h2>
 					<h2>
 						{'\n          '}
-						Blame BareMux! There are no bare clients.... reloading
-						the page will resolve this issue.
+						The proxy connection is unavailable.... reloading the
+						page will resolve this issue.
 						{'\n        '}
 					</h2>
 					<p>

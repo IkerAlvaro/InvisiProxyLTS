@@ -66,17 +66,15 @@ export function createSiteApp(options: AppOptions = {}) {
 
 	// All entries in the dist folder are created with source rewrites.
 	// Minified scripts are also served here, if minification is enabled.
-	['assets', 'uv', 'scram', 'epoxy', 'libcurl', 'baremux'].forEach(
-		(prefix) => {
-			app.register(fastifyStatic, {
-				root: fileURLToPath(
-					new URL(`../views/dist/${prefix}`, import.meta.url)
-				),
-				prefix: getAltPrefix(prefix, serverUrl.pathname),
-				decorateReply: false,
-			});
-		}
-	);
+	['assets', 'scram', 'libcurl'].forEach((prefix) => {
+		app.register(fastifyStatic, {
+			root: fileURLToPath(
+				new URL(`../views/dist/${prefix}`, import.meta.url)
+			),
+			prefix: getAltPrefix(prefix, serverUrl.pathname),
+			decorateReply: false,
+		});
+	});
 
 	['sw.js', 'sw-blacklist.js'].forEach((swFile) => {
 		const distName = flatAltPaths[`files/${swFile}`] || swFile;
@@ -95,7 +93,7 @@ export function createSiteApp(options: AppOptions = {}) {
 	 *
 	 * All website files are stored in the /views directory.
 	 * This takes one of those files and displays it for a site visitor.
-	 * Paths like /browsing are converted into paths like /views/dist/pages/surf.html
+	 * Paths like /browsing map to /views/dist/pages/proxnav/scramjet.html
 	 * back here. Which path converts to what is defined in routes.ts.
 	 */
 
@@ -122,15 +120,7 @@ export function createSiteApp(options: AppOptions = {}) {
 				import.meta.url,
 				false
 			);
-		let exemptDirs = [
-				'assets',
-				'uv',
-				'scram',
-				'epoxy',
-				'libcurl',
-				'baremux',
-				'wisp',
-			].map((dir) =>
+		let exemptDirs = ['assets', 'scram', 'libcurl', 'wisp'].map((dir) =>
 				getAltPrefix(dir, serverUrl.pathname).slice(
 					serverUrl.pathname.length,
 					-1

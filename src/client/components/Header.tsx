@@ -27,10 +27,10 @@ export default function Header() {
 							class={'line'}
 							href={route('/browsing')}
 							title={
-								'Web Proxies - Access various web proxies to bypass restrictions'
+								'Browse - Bypass restrictions on the web'
 							}
 						>
-							Web Proxies
+							Browse
 						</a>
 					</li>
 					<li>
@@ -169,7 +169,7 @@ export default function Header() {
 			<div class={'mobile-overlay'}>
 				<ul class={'navbar-1'}>
 					<li>
-						<a href={route('/browsing')}>{'Web Proxies'}</a>
+						<a href={route('/browsing')}>{'Browse'}</a>
 					</li>
 					<li>
 						<a href={route('/partners')}>{'Links'}</a>

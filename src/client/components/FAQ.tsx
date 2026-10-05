@@ -88,8 +88,7 @@ export default function FAQ() {
 					<p>
 						{'\n      '} Reload the page. If that doesn't work the
 						first time, simply use the browser's back button or head
-						back to the main proxy page (e.g Scramjet or
-						Ultraviolet) and try again. {'\n    '}
+						back to the Scramjet page and try again. {'\n    '}
 					</p>
 				</div>
 				<div class={'faq-text'}>

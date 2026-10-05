@@ -13,8 +13,6 @@ import { dirname, join, basename } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { build } from 'vite';
 import type { Plugin } from 'vite';
-import { baremuxPath } from '@mercuryworkshop/bare-mux/node';
-import { uvPath } from '@titaniumnetwork-dev/ultraviolet';
 import { scramjetPath } from '@mercuryworkshop/scramjet/path';
 import { config, flatAltPaths, splashRandom, serverUrl } from './routes.ts';
 import {
@@ -30,7 +28,6 @@ import { renderSolidDocuments } from './solid.ts';
 const projectUrl = new URL('../', import.meta.url);
 const projectPath = fileURLToPath(projectUrl);
 const modPath = (path: string) => join(projectPath, 'node_modules', path);
-const epoxyPath = modPath('@mercuryworkshop/epoxy-transport/dist');
 const libcurlPath = modPath('@mercuryworkshop/libcurl-transport/dist');
 const scramjetControllerPath = modPath(
 	'@mercuryworkshop/scramjet-controller/dist'
@@ -144,13 +141,7 @@ export function siteBuildPlugin(): Plugin {
 			rmSync(dist, { force: true, recursive: true });
 			mkdirSync(dist);
 
-			const ignoredDirectories = [
-				'dist',
-				'dist-new',
-				'assets',
-				'uv',
-				'scram',
-			];
+			const ignoredDirectories = ['dist', 'dist-new', 'assets', 'scram'];
 			const ignoredFileTypes = /\.map$|\.d\.ts$/;
 
 			const compile = (
@@ -230,23 +221,11 @@ export function siteBuildPlugin(): Plugin {
 					}
 				});
 
-			const localAssetDirs = ['assets', 'uv'];
-			for (const path of localAssetDirs) {
-				mkdirSync(`./views/dist-new/${path}`);
-				compile(
-					`./views/${path}`,
-					'',
-					`${path}/`,
-					`./views/${path}`,
-					true
-				);
-			}
+			mkdirSync(join(dist, 'assets'));
+			compile('./views/assets', '', 'assets/', './views/assets', true);
 
 			const compilePaths = [
-				['epoxy', epoxyPath],
 				['libcurl', libcurlPath],
-				['baremux', baremuxPath],
-				['uv', uvPath],
 				['scram', scramjetPath],
 				['scram', scramjetControllerPath],
 				['scram', scramjetUtilsPath],

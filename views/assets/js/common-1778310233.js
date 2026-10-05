@@ -12,7 +12,6 @@ import { values, route, maskText } from 'build:invisiproxy';
 /* GENERAL URL HANDLERS */
 
 // To be defined after the document has fully loaded.
-let uvConfig = {};
 let sjBundle = null;
 const FRAME_URL_KEY = `${values.storageNamespace}-frame-url`;
 const SJ_PREFIX_TAG = 'sj:';
@@ -46,7 +45,7 @@ const getDomain = () =>
   },
   /* Used to set functions for the goProx object at the bottom.
    * See the goProx object at the bottom for some usage examples
-   * on the URL handlers, omnibox functions, and the uvUrl function.
+   * on the URL handlers, omnibox functions, and the sjUrl function.
    */
   urlHandler = (parser) =>
     typeof parser === 'function'
@@ -315,16 +314,6 @@ const getSearchTemplate = (
     // Treat the input as a search query instead of a website.
     return getSearchTemplate().replace('%s', encodeURIComponent(input));
   },
-  // Parse a URL to use with Ultraviolet.
-  uvUrl = (url) => {
-    try {
-      url = location.origin + uvConfig.prefix + uvConfig.encodeUrl(search(url));
-    } catch (e) {
-      // This is for cases where the Ultraviolet scripts have not been loaded.
-      url = search(url);
-    }
-    return url;
-  },
   sjUrl = (url) => SJ_PREFIX_TAG + search(url)
 
 /* To use:
@@ -336,26 +325,23 @@ const getSearchTemplate = (
  *
  * Examples:
  * Stealth mode -
- * goProx.ultraviolet("https://google.com", 1);
- * goProx.ultraviolet("https://google.com", "stealth");
+ * goProx.scramjet("https://google.com", 1);
+ * goProx.scramjet("https://google.com", "stealth");
  *
  * goProx.searx(1);
  * goProx.searx("stealth");
  *
  * Window mode -
- * goProx.ultraviolet("https://google.com", "window");
+ * goProx.scramjet("https://google.com", "window");
  *
  * goProx.searx("window");
  *
  * Return string value mode (default) -
- * goProx.ultraviolet("https://google.com");
+ * goProx.scramjet("https://google.com");
  *
  * goProx.searx();
  */
 const preparePage = async () => {
-  // This won't break the service workers as they store the variable separately.
-  uvConfig = self[values.uvConfigKey];
-
   if (window.$invisiScramjet?.ready) sjBundle = window.$invisiScramjet;
   else
     window.addEventListener(
@@ -370,13 +356,11 @@ const preparePage = async () => {
   const goProx = Object.freeze({
     // `location.protocol + "//" + getDomain()` more like `location.origin`
     // setAuthCookie("__cor_auth=1", false);
-    ultraviolet: urlHandler(uvUrl),
-
     scramjet: urlHandler(sjUrl),
 
     tru: sjPreset('https://truffled.lol/g'),
 
-    youtube: urlHandler(uvUrl('https://youtube.com')),
+    youtube: sjPreset('https://youtube.com'),
 
     invidious: sjPreset('https://invidious.snopyta.org'),
 
@@ -468,13 +452,7 @@ const preparePage = async () => {
         : (mode) => () => {
             goProx[type](mode);
           },
-      // Ultraviolet and Scramjet are currently incompatible with window mode.
-      defaultModes = {
-        globalDefault: 'window',
-        ultraviolet: 'stealth',
-        scramjet: 'stealth',
-      },
-      searchMode = defaultModes[type] || defaultModes['globalDefault'];
+      searchMode = type === 'scramjet' ? 'stealth' : 'window';
 
     if (prUrl) {
       let enableSearch = false,
@@ -486,8 +464,7 @@ const preparePage = async () => {
         else if (e.code === 'Validator Test') {
           const rawValue = e.target.value;
           let resolved;
-          if (type === 'ultraviolet') resolved = uvUrl(rawValue);
-          else if (type === 'scramjet') resolved = sjUrl(rawValue);
+          if (type === 'scramjet') resolved = sjUrl(rawValue);
           else resolved = search(rawValue);
           e.target.value = resolved == null ? '' : resolved;
           e.target.dispatchEvent(new Event('change'));
@@ -564,7 +541,6 @@ const preparePage = async () => {
     });
   };
 
-  prSet('pr-uv', 'ultraviolet');
   prSet('pr-sj', 'scramjet');
   prSet('pr-yt', 'youtube');
   prSet('pr-iv', 'invidious');

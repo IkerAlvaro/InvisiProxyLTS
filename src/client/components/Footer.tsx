@@ -96,18 +96,6 @@ export default function Footer() {
 							<a
 								target={'_blank'}
 								rel={'noopener noreferrer'}
-								href={route('/github/epoxy')}
-								title={
-									'Epoxy - Epoxy is an encrypted proxy for browser javascript. It allows you to make requests that bypass CORS without compromising security, by running SSL/TLS inside webassembly.'
-								}
-							>
-								Epoxy
-							</a>
-						</li>
-						<li>
-							<a
-								target={'_blank'}
-								rel={'noopener noreferrer'}
 								href={route('/github/libcurl-js')}
 								title={
 									'A port of libcurl to WebAssembly, for proxying HTTPS requests from the browser with full TLS encryption.'
@@ -135,16 +123,6 @@ export default function Footer() {
 							<a
 								target={'_blank'}
 								rel={'noopener noreferrer'}
-								href={route('/github/ultraviolet')}
-								title={'Ultraviolet - Browse with Ultraviolet.'}
-							>
-								Ultraviolet
-							</a>
-						</li>
-						<li>
-							<a
-								target={'_blank'}
-								rel={'noopener noreferrer'}
 								href={route('/github/wisp')}
 								title={
 									'Wisp - Wisp is a low-overhead, easy to implement protocol for proxying multiple TCP/UDP sockets over a single websocket.'
@@ -157,12 +135,12 @@ export default function Footer() {
 							<a
 								target={'_blank'}
 								rel={'noopener noreferrer'}
-								href={route('/github/bare-mux')}
+								href={route('/github/proxy-transports')}
 								title={
-									'BareMux - A system for managing http transports in a project such as Ultraviolet.'
+									'Proxy Transports - The transport interface used by Scramjet.'
 								}
 							>
-								Bare-Mux
+								Proxy Transports
 							</a>
 						</li>
 					</ul>

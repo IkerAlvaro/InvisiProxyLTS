@@ -8,6 +8,7 @@ import {
 import AntiExfil from '../components/AntiExfil.tsx';
 import Header from '../components/Header.tsx';
 import Footer from '../components/Footer.tsx';
+import { config } from '../../site-config.ts';
 
 export default function Home() {
 	return (
@@ -21,11 +22,13 @@ export default function Home() {
 			>
 				<Header />
 			</nav>
-			<div id={'banner'} class={'fullwidth'}>
-				<p class={'text-center'}>
-					<Splash />
-				</p>
-			</div>
+			{config.showSplash && (
+				<div id={'banner'} class={'fullwidth'}>
+					<p class={'text-center'}>
+						<Splash />
+					</p>
+				</div>
+			)}
 			<div id={'mainbody'} class={'fullwidth'}>
 				<div id={'background'} class={'fullwidth'}></div>
 				<section
@@ -39,29 +42,17 @@ export default function Home() {
 						<h1>Privacy right at your fingertips.</h1>
 						<a
 							class={'homebutton'}
-							href={'#scrollfix'}
+							href={'/browsing'}
 							aria-label={'Bypass now'}
 						>
-							{'By'}
-							<wbr />
-							{'pa'}
-							<wbr />
-							{'ss now?'}
+							Browse Now
 						</a>
 						<a
 							class={'homebutton mobile'}
 							href={'#scrollfix'}
 							aria-label={'Browse now'}
 						>
-							{'By'}
-							<wbr />
-							{'p'}
-							<wbr />
-							{'as'}
-							<wbr />
-							{'s no'}
-							<wbr />
-							{'w?'}
+							Browse Now
 						</a>
 					</div>
 					<Cooking />
@@ -183,11 +174,11 @@ export default function Home() {
 									settings, leak prevention, hidden history
 									settings, and extensive site compatibility
 									support via Scramjet + Wisp (Paired with
-									Epoxy and Libcurl Transport). Other popular
-									services like CroxyProxy or Proxium often
-									only do half the job of rewriting assets
-									leaking requests while being a privacy
-									concern. {'\n              '}
+									Libcurl Transport). Other popular services
+									like CroxyProxy or Proxium often only do
+									half the job of rewriting assets leaking
+									requests while being a privacy concern.{' '}
+									{'\n              '}
 								</p>
 								<div class={'brand-logo-container'}>
 									<i
@@ -201,18 +192,19 @@ export default function Home() {
 								</div>
 								<p>
 									{'\n                '} Leveraging our source
-									randomization and projects like Epoxy, Wisp,
-									and Scramjet, this project delivers a
-									seamless experience that circumvents web,
-									government and network filters. This is
-									achieved entirely within your browser as a
-									website and our backend (or your own if
-									self-hosting), enabling users to bypass even
-									the most invasive censorship blocks. No need
-									to download anything simply type in the
-									domain for InvisiProxy, join the discord to
-									obtain mirrors if blocked and browse
-									anonymously. {'\n              '}
+									randomization and projects like Proxy
+									Transports, Wisp, and Scramjet, this project
+									delivers a seamless experience that
+									circumvents web, government and network
+									filters. This is achieved entirely within
+									your browser as a website and our backend
+									(or your own if self-hosting), enabling
+									users to bypass even the most invasive
+									censorship blocks. No need to download
+									anything simply type in the domain for
+									InvisiProxy, join the discord to obtain
+									mirrors if blocked and browse anonymously.{' '}
+									{'\n              '}
 								</p>
 							</div>
 						</div>
@@ -293,8 +285,8 @@ export default function Home() {
 								<div class={'dependencylogo'}>
 									<img
 										loading={'lazy'}
-										src={route('/assets/img/uv.webp')}
-										alt={'Ultraviolet'}
+										src={route('/assets/img/scramjet.webp')}
+										alt={'Scramjet'}
 									/>
 								</div>
 								<div class={'dependencylogo'}>
@@ -346,8 +338,8 @@ export default function Home() {
 								<div class={'dependencylogo'}>
 									<img
 										loading={'lazy'}
-										src={route('/assets/img/uv.webp')}
-										alt={'Ultraviolet'}
+										src={route('/assets/img/scramjet.webp')}
+										alt={'Scramjet'}
 									/>
 								</div>
 							</div>
@@ -488,7 +480,7 @@ export default function Home() {
 									{
 										'\n                Head to the\n                '
 									}
-									<a href={route('/browsing')}>Web Proxies</a>
+									<a href={route('/browsing')}>Browse</a>
 									{'\n                '}
 									page and select one of the proxies featured!
 									Afterwards, type out the site you wish to

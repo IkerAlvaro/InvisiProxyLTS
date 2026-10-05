@@ -21,7 +21,7 @@ export default function Terms() {
 				<h4>{'Is any data being collected?'}</h4>
 				<p>
 					{`
-      ${' Nope! No data is logged or collected by any of our web proxies\n      featured. Logging is disabled to ensure user privacy on the backend.\n      NextDNS queries are adjusted to not log client IPs or domains and store in\n      Switzerland. NextDNS log retention for respective numerical values is\n      minimal and focused on ensuring the service operates smoothly. Cloudflare\n      is utilized for this project to improve performance and have easier DNS\n      management due to the scope of this project. At a minimum Cloudflare\n      numerical values are utilized for tracking visits and page views\n      indicating when server upgrades are needed. NGINX is set to store no logs.\n      InvisiProxy LTS values its statement of ending internet censorship along\n      with valuing user privacy. Outside of this the Wisp protocol (to proxy TCP\n      connections) is used with epoxy-transport and libcurl-transport for\n      end-to-end encryption by running SSL/TLS inside webassembly. This service\n      is made to be as transparent as possible and remember you can self-host at\n      any time to ensure you are in control over everything.\n      <br /><br />If you wish to make a privacy statement or request please\n      contact us via Discord. '}
+      ${' Nope! No data is logged or collected by any of our web proxies\n      featured. Logging is disabled to ensure user privacy on the backend.\n      NextDNS queries are adjusted to not log client IPs or domains and store in\n      Switzerland. NextDNS log retention for respective numerical values is\n      minimal and focused on ensuring the service operates smoothly. Cloudflare\n      is utilized for this project to improve performance and have easier DNS\n      management due to the scope of this project. At a minimum Cloudflare\n      numerical values are utilized for tracking visits and page views\n      indicating when server upgrades are needed. NGINX is set to store no logs.\n      InvisiProxy LTS values its statement of ending internet censorship along\n      with valuing user privacy. Outside of this the Wisp protocol (to proxy TCP\n      connections) is used with libcurl-transport for\n      end-to-end encryption by running SSL/TLS inside webassembly. This service\n      is made to be as transparent as possible and remember you can self-host at\n      any time to ensure you are in control over everything.\n      <br /><br />If you wish to make a privacy statement or request please\n      contact us via Discord. '}
     `}
 				</p>
 				<h4 id={'Security'}>{'Security'}</h4>
@@ -46,8 +46,7 @@ export default function Terms() {
 					with a wide range of web technologies, ensuring seamless
 					access to various websites and online services. This is done
 					through the support of various open-source transports
-					following the protocol (Epoxy Transport and Libcurl
-					Transport). {'\n    '}
+					following the protocol (Libcurl Transport). {'\n    '}
 				</p>
 				<p>
 					{'\n      '} Resilience Against Censorship: The protocol is

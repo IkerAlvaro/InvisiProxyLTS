@@ -14,8 +14,6 @@ declare global {
 		$invisiScramjetError?: unknown;
 		loadFull: typeof loadFull;
 	}
-
-	const BareMux: typeof import('@mercuryworkshop/bare-mux');
 	function tippy(
 		target: string | Element | Element[],
 		options: Record<string, unknown>

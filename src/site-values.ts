@@ -9,7 +9,6 @@ export interface SiteValues {
 	version: string;
 	cacheKey: number;
 	storageNamespace: string;
-	uvConfigKey: string;
 	labels: Record<string, string>;
 	defaultSearch: string;
 	splash: string[];
@@ -120,10 +119,7 @@ export function ifDisguise(text: string) {
 export function getSplash() {
 	return maskText(randomItem(values.splash));
 }
-export function renderProxyError(
-	kind: 'ultraviolet' | 'scramjet',
-	scriptUrl: string
-) {
+export function renderProxyError(kind: 'scramjet', scriptUrl: string) {
 	const parts = values.errors[kind];
 	if (!parts) throw new Error(`Missing ${kind} error document`);
 	const escaped = scriptUrl

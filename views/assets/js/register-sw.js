@@ -1,11 +1,6 @@
 import { values, route } from 'build:invisiproxy';
 (() => {
-  const swRoutes = {
-      sj: [route("/sw.js"), route("/sw-blacklist.js")],
-      uv: [route("/uv/sw.js"), route("/uv/sw-blacklist.js")],
-    },
-    swScope = route("/"),
-    uvSwScope = route("/uv/"),
+  const swScope = route("/"),
     swAllowedHostnames = ['localhost', '127.0.0.1'],
     wispUrl =
       `${(location.protocol === 'https:' ? 'wss' : 'ws')}://${location.host}${route("/wisp/")}`,
@@ -14,35 +9,26 @@ import { values, route } from 'build:invisiproxy';
       eu: 'socks5h://localhost:7000',
       jp: 'socks5h://localhost:7001',
     },
-    transports = {
-      [values.labels["epoxy"]]: route("/epoxy/index.mjs"),
-      [values.labels["libcurl"]]: route("/libcurl/index.mjs"),
-    },
+    transportUrl = route("/libcurl/index.mjs"),
     storageId = `${values.storageNamespace}-storage`,
     storageObject = () => JSON.parse(localStorage.getItem(storageId)) || {},
-    readStorage = (name) => storageObject()[name],
-    defaultMode = values.labels["epoxy"];
+    readStorage = (name) => storageObject()[name];
 
-  transports.default = transports[defaultMode];
-  Object.freeze(transports);
-
-  const getTransportSelection = () => {
-    const url = transports[readStorage('Transport')] || transports.default;
+  const getTransportOptions = () => {
     const options = { wisp: wispUrl };
     if ('string' === typeof readStorage('UseSocks5'))
       options.proxy = proxyUrl[readStorage('UseSocks5')];
-    return { url, options };
+    return options;
   };
 
-  const swVariant = () => (readStorage('HideAds') !== false ? 1 : 0);
+  const getSWRoute = () =>
+    route(readStorage('HideAds') !== false ? '/sw-blacklist.js' : '/sw.js');
 
   const unregisterStaleSWs = async () => {
-    const expected = [swRoutes.sj[swVariant()], swRoutes.uv[swVariant()]].map(
-      (sw) => new URL(sw, location.origin).pathname
-    );
+    const expected = new URL(getSWRoute(), location.origin).pathname;
     for (const registration of await navigator.serviceWorker.getRegistrations()) {
       const active = registration.active;
-      if (active && !expected.includes(new URL(active.scriptURL).pathname))
+      if (active && new URL(active.scriptURL).pathname !== expected)
         await registration.unregister();
     }
   };
@@ -59,7 +45,7 @@ import { values, route } from 'build:invisiproxy';
 
     await unregisterStaleSWs();
 
-    const sw = swRoutes.sj[swVariant()];
+    const sw = getSWRoute();
     console.log('Registering Scramjet service worker:', sw);
     const registration = await navigator.serviceWorker.register(sw, {
       scope: swScope,
@@ -87,12 +73,12 @@ import { values, route } from 'build:invisiproxy';
     return registration;
   };
 
-  const buildScramjetTransport = async () => {
-    const { url, options } = getTransportSelection();
-    const mod = await import(url);
+  /** @returns {Promise<import("@mercuryworkshop/proxy-transports").ProxyTransport>} */
+  const buildScramjetTransport = async (options) => {
+    const mod = await import(transportUrl);
     const TransportClient = mod.default;
     const transport = new TransportClient(options);
-    if (typeof transport.init === 'function') await transport.init();
+    await transport.init();
     return transport;
   };
 
@@ -137,27 +123,9 @@ import { values, route } from 'build:invisiproxy';
         return;
       }
 
-      const { url: transportUrl, options: transportOptions } =
-        getTransportSelection();
+      const transportOptions = getTransportOptions();
       console.log('Using proxy:', transportOptions.proxy);
       console.log('Transport mode:', transportUrl);
-
-      if (typeof BareMux !== 'undefined')
-        try {
-          const baremux = new BareMux.BareMuxConnection(
-            route("/baremux/worker.js")
-          );
-          await baremux.setTransport(transportUrl, [transportOptions]);
-          await navigator.serviceWorker.register(swRoutes.uv[swVariant()], {
-            scope: uvSwScope,
-          });
-          console.log('Ultraviolet service worker registered');
-        } catch (err) {
-          console.warn(
-            'BareMux setup failed',
-            err
-          );
-        }
 
       const registration = await registerScramjetSW();
 
@@ -168,7 +136,7 @@ import { values, route } from 'build:invisiproxy';
 
       const { Controller } = $scramjetController;
       const { defaultConfig } = $scramjet;
-      const transport = await buildScramjetTransport();
+      const transport = await buildScramjetTransport(transportOptions);
       const controller = new Controller({
         serviceworker,
         transport,

@@ -21,7 +21,7 @@ export default function Scramjet() {
 							<img
 								class={'pr-logo'}
 								src={route('/assets/img/scramjet.webp')}
-								alt={'Scramjet Web Proxy'}
+								alt={'Scramjet'}
 							/>
 							<p>
 								<a href={route('/github/scramjet')}>

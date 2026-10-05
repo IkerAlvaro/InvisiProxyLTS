@@ -75,6 +75,8 @@ try {
 			await readFile('views/dist/pages/misc/deobf/loader.html')
 		);
 	}
+	assert.equal(pages.browsing, 'pages/proxnav/scramjet.html');
+	assert.equal('browsing' in externalPages, false);
 	for (const [name, target] of Object.entries(externalPages)) {
 		const response = await app.inject(base + name);
 		assert.equal(response.statusCode, 302, name);
@@ -106,12 +108,9 @@ try {
 		);
 	}
 	for (const [prefix, name] of [
-		['uv', 'uv.config.js'],
 		['scram', 'scramjet.wasm'],
 		['scram', 'controller.api.js'],
-		['epoxy', 'index.mjs'],
 		['libcurl', 'index.mjs'],
-		['baremux', 'worker.js'],
 	]) {
 		const response = await app.inject(
 			getAltPrefix(prefix, base) + (flatAltPaths[`files/${name}`] || name)
@@ -165,7 +164,17 @@ try {
 		remoteAddress: '192.0.2.2',
 	});
 	assert.equal(restocked.json().link, 'https://restocked.example/');
+	const directories = await readdir('views/dist', { withFileTypes: true });
+	assert.deepEqual(
+		directories
+			.filter((entry) => entry.isDirectory())
+			.map((entry) => entry.name)
+			.sort(),
+		['assets', 'libcurl', 'pages', 'scram']
+	);
 	const files = await readdir('views/dist', { recursive: true });
+	assert.ok(!files.includes('pages/surf.html'));
+
 	assert.ok(
 		!files.some(
 			(file) =>

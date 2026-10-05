@@ -32,24 +32,6 @@ export default function ProxyFrameMetadata() {
 				data-module={''}
 				innerHTML={''}
 			/>
-			<script
-				src={route('/baremux/index.js')}
-				defer={true}
-				data-module={''}
-				innerHTML={''}
-			/>
-			<script
-				src={route('/uv/uv.bundle.js')}
-				defer={true}
-				data-module={''}
-				innerHTML={''}
-			/>
-			<script
-				src={route('/uv/uv.config.js')}
-				defer={true}
-				data-module={''}
-				innerHTML={''}
-			/>
 			<link
 				rel={'stylesheet'}
 				href={'https://unpkg.com/tippy.js@6/dist/backdrop.css'}

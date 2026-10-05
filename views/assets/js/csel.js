@@ -139,9 +139,6 @@ const storageId = `${values.storageNamespace}-storage`,
       'Inbox - Gmail \n https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico',
   }),
   defaultTheme = 'dark',
-  // Choose the default transport mode, for proxying, based on the browser.
-  // Firefox is not supported by epoxy yet, which is why this is implemented.
-  defaultMode = values.labels["epoxy"],
   defaultSearch = values.defaultSearch;
 
 // All code in this block is used by menu items that adjust website settings.
@@ -244,27 +241,6 @@ if (document.getElementById('csel')) {
     e.target.value === defaultSearch
       ? removeStorage('SearchEngine')
       : setStorage('SearchEngine', e.target.value);
-  });
-
-  // Allow users to change the Wisp transport mode, for proxying, with the UI.
-  attachClassEventListener(`${values.labels["wisp-transport"]}-list`, 'change', (e) => {
-    if (e.target.checked) {
-      let wispTransportList = e.target.closest(`.${values.labels["wisp-transport"]}-list`);
-      !wispTransportList.querySelector('input:checked') ||
-      e.target.value === defaultMode
-        ? removeStorage('Transport')
-        : setStorage('Transport', e.target.value);
-
-      // Only the libcurl transport mode supports TOR at the moment.
-      let torCheck = document.getElementsByClassName('useonion');
-      if (
-        e.target.value !== 'libcurl' &&
-        checkBooleanState(torCheck[0]) === true
-      )
-        classUpdateHandler(torCheck, 'off', classEvent(torCheck, 'change'))();
-    }
-
-    if (e.isTrusted) location.reload();
   });
 
   attachClassEventListener('theme-list', 'change', (e) => {
@@ -395,32 +371,17 @@ if (document.getElementById('csel')) {
     }
   });
 
-  /* Allow users to toggle onion routing in Ultraviolet with the UI. Only
-   * the libcurl transport mode supports TOR at the moment, so ensure that
-   * users are aware that they cannot use TOR with other modes.
-   */
   attachClassEventListener('useonion', 'change', (e) => {
-    let unselectedModes = document.querySelectorAll(
-      `.${values.labels["wisp-transport"]}-list input:not([value=${values.labels["libcurl"]}]),.region-list`
-    );
-    const wispTransportList = document.getElementsByClassName(
-        `${values.labels["wisp-transport"]}-list`
-      ),
-      regionList = document.getElementsByClassName('region-list');
+    const regionList = document.getElementsByClassName('region-list');
     if (checkBooleanState(e.target) === true) {
-      classUpdateHandler(
-        wispTransportList,
-        values.labels["libcurl"],
-        classEvent(wispTransportList, 'change')
-      )();
       classUpdateHandler(regionList, 'off', classEvent(regionList, 'change'))();
-      unselectedModes.forEach((e) => {
+      Array.from(regionList).forEach((e) => {
         e.setAttribute('disabled', 'true');
       });
       setStorage('UseSocks5', 'tor');
       classUpdateHandler(document.getElementsByClassName('useonion'), 'on')();
     } else {
-      unselectedModes.forEach((e) => {
+      Array.from(regionList).forEach((e) => {
         e.removeAttribute('disabled');
       });
 
@@ -525,13 +486,7 @@ useStorageArgs('SearchEngine', (s) => {
   )();
 });
 
-// Load the Wisp transport mode that was last used, or use the default.
-useStorageArgs('Transport', (s) => {
-  classUpdateHandler(
-    document.getElementsByClassName(`${values.labels["wisp-transport"]}-list`),
-    s || defaultMode
-  )();
-});
+if (readStorage('Transport') !== undefined) removeStorage('Transport');
 
 // Ads are disabled by default. Load ads if ads were enabled previously.
 // Change !== to === here if ads should be enabled by default.

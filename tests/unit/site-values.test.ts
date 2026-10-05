@@ -19,8 +19,8 @@ function context(overrides: Partial<SiteValues> = {}) {
 		basePath: '/school/',
 		aliases: {
 			partners: 'interface',
-			'prefixes/uv': 'network',
-			'files/uv.js': 'network.js',
+			'prefixes/scram': 'network',
+			'files/scramjet.js': 'network.js',
 			'github/fastify': 'github/fs',
 		},
 		cacheBust: { 'common.js': 'common-123.js' },
@@ -36,7 +36,7 @@ test('routes keep base paths, aliases, cache-busting and relative URLs coherent'
 		['/', '/school/'],
 		['/partners', '/school/interface'],
 		['partners', '/school/interface'],
-		['/uv/uv.js', '/school/network/network.js'],
+		['/scram/scramjet.js', '/school/network/network.js'],
 		['/github/fastify', '/school/github/fs'],
 		['/assets/js/common.js', '/school/assets/js/common-123.js'],
 		['./relative.js', './relative.js'],
@@ -113,5 +113,6 @@ test('proxy error templates escape supplied script URLs', () => {
 		renderProxyError('scramjet', '/x?a="<b>&c'),
 		'<script src="/x?a=&quot;&lt;b>&amp;c"></script>'
 	);
-	assert.throws(() => renderProxyError('ultraviolet', '/x'), /Missing/);
+	context({ errors: {} });
+	assert.throws(() => renderProxyError('scramjet', '/x'), /Missing/);
 });
