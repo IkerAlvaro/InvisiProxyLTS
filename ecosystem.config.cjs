@@ -1,0 +1,19 @@
+module.exports = {
+	apps: [
+		{
+			name: 'invisiproxy',
+			cwd: __dirname,
+			script: './backend.ts',
+			interpreter: process.execPath,
+			exec_mode: 'fork',
+			instances: 1,
+			autorestart: true,
+			watch: false,
+			restart_delay: 3000,
+			time: true,
+			env: {
+				NODE_ENV: 'production',
+			},
+		},
+	],
+};
