@@ -42,6 +42,7 @@ export const buildValues: SiteValues = {
 		return process.env.INVISIPROXY_VITE_DEV === '1';
 	},
 	usingSEO: config.usingSEO,
+	showSplash: config.showSplash,
 	disguiseFiles: config.disguiseFiles,
 	inlineAssets: config.disguiseFiles && config.minifyScripts,
 	basePath: serverUrl.pathname,

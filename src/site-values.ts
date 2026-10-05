@@ -1,6 +1,7 @@
 export interface SiteValues {
 	development?: boolean;
 	usingSEO: boolean;
+	showSplash: boolean;
 	disguiseFiles: boolean;
 	inlineAssets: boolean;
 	basePath: string;

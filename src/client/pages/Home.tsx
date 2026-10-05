@@ -8,7 +8,6 @@ import {
 import AntiExfil from '../components/AntiExfil.tsx';
 import Header from '../components/Header.tsx';
 import Footer from '../components/Footer.tsx';
-import { config } from '../../site-config.ts';
 
 export default function Home() {
 	return (
@@ -22,7 +21,7 @@ export default function Home() {
 			>
 				<Header />
 			</nav>
-			{config.showSplash && (
+			{values.showSplash && (
 				<div id={'banner'} class={'fullwidth'}>
 					<p class={'text-center'}>
 						<Splash />
