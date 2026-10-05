@@ -63,7 +63,7 @@ export default function Credits() {
 								{'\n            '}
 							</li>
 							<li>
-								{'\n              '} Sylvia (Main Contributor,
+								{'\n              '} Sylvia (Co-Owner, Main Contributor,
 								wispurr, TODO squasher, Discord: @sylvieisnton,
 								https://github.com/sylvieisnton/wispurr){' '}
 								{'\n            '}
