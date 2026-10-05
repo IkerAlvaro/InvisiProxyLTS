@@ -2,7 +2,7 @@
 
 <img align="left" width="40px" src="https://raw.githubusercontent.com/QuiteAFancyEmerald/InvisiProxy/master/views/assets/img/logo_github.png"></img>
 
-# InvisiProxy LTS (v7.x.x)
+# InvisiProxy LTS (v8.x.x)
 #### Formerly Holy Unblocker LTS
 
 ![GitHub Actions Status](https://github.com/QuiteAFancyEmerald/InvisiProxy/workflows/CI-Production/badge.svg)

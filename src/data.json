@@ -90,7 +90,7 @@
 		"Scramjet": ["Sc*r*a*m*j*e*t"]
 	},
 	"splash": [
-		"This version is the public build of the Invisi LTS project, and it's being worked on via the master branch; stuff may NOT work! REMOVE THIS MESSAGE if you wish to host a mirror."
+		"This version is the public build of the Invisi LTS project. Consider contributing! Remove this message if you wish to host a mirror."
 	],
-	"version": ["7.0.2"]
+	"version": ["8.1.0"]
 }

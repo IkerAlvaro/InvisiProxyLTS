@@ -16,7 +16,7 @@ export default function Header() {
 					title={'InvisiProxy Home Page'}
 				>
 					{'\n    '}
-					InvisiProxy v7.0.x
+					InvisiProxy v8.1.x
 					{'\n  '}
 				</a>
 			</div>
