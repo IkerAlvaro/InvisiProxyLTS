@@ -1,3 +1,4 @@
+import { values, route, maskText } from 'build:invisiproxy';
 /* -----------------------------------------------
 /* Authors: Yoct, OlyB, b4kt
 /* GNU Affero General Public License v3.0: https://www.gnu.org/licenses/agpl-3.0.en.html
@@ -13,7 +14,7 @@ date.setFullYear(date.getFullYear() + 100);
 date = date.toUTCString();
 
 // Cookies will not be used unless necessary. The localStorage API will be used instead.
-const storageId = '{{hu-lts}}-storage',
+const storageId = `${values.storageNamespace}-storage`,
   storageObject = () => JSON.parse(localStorage.getItem(storageId)) || {},
   setStorage = (name, value) => {
     let mainStorage = storageObject();
@@ -129,19 +130,16 @@ const storageId = '{{hu-lts}}-storage',
   // The icon URLs and tab titles may need to be updated over time.
   presetIcons = Object.freeze({
     '': ' \n ',
-    '{{Google}}': 'Google \n https://www.google.com/favicon.ico',
-    '{{Bing}}':
+    [values.labels["Google"]]: 'Google \n https://www.google.com/favicon.ico',
+    [values.labels["Bing"]]:
       'Bing \n https://www.bing.com/sa/simg/favicon-trans-bg-blue-mg-28.ico',
-    '{{Google}} Drive':
+    [`${values.labels["Google"]} Drive`]:
       'Home - Google Drive \n https://ssl.gstatic.com/images/branding/product/2x/drive_2020q4_48dp.png',
     Gmail:
       'Inbox - Gmail \n https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico',
   }),
   defaultTheme = 'dark',
-  // Choose the default transport mode, for proxying, based on the browser.
-  // Firefox is not supported by epoxy yet, which is why this is implemented.
-  defaultMode = '{{epoxy}}',
-  defaultSearch = '{{defaultSearch}}';
+  defaultSearch = values.defaultSearch;
 
 // All code in this block is used by menu items that adjust website settings.
 
@@ -154,7 +152,7 @@ if (document.getElementById('csel')) {
       ).addEventListener(...args),
     focusElement = document
       .getElementsByClassName('dropdown-settings')[0]
-      .parentElement.querySelector("a[href='#']");
+      .parentElement.querySelector("button.link-button");
 
   // TODO: Add functionality to adapt listeners for the Wisp Transport List.
   // TODO: Properly comment this code.
@@ -195,7 +193,7 @@ if (document.getElementById('csel')) {
       // Allow users to reset the title to default if nothing is entered.
       focusElement.focus();
       removeStorage('Title');
-      pageTitle('{{mask}}{{InvisiProxy LTS}}');
+      pageTitle(maskText("InvisiProxy LTS"));
     }
   });
 
@@ -211,7 +209,7 @@ if (document.getElementById('csel')) {
       //    Allow users to reset the favicon to default if nothing is entered.
       focusElement.focus();
       removeStorage('Icon');
-      pageIcon('{{route}}{{assets/ico/favicon.ico}}');
+      pageIcon(route("assets/ico/favicon.ico"));
     }
   });
 
@@ -243,27 +241,6 @@ if (document.getElementById('csel')) {
     e.target.value === defaultSearch
       ? removeStorage('SearchEngine')
       : setStorage('SearchEngine', e.target.value);
-  });
-
-  // Allow users to change the Wisp transport mode, for proxying, with the UI.
-  attachClassEventListener('{{wisp-transport}}-list', 'change', (e) => {
-    if (e.target.checked) {
-      let wispTransportList = e.target.closest('.{{wisp-transport}}-list');
-      !wispTransportList.querySelector('input:checked') ||
-      e.target.value === defaultMode
-        ? removeStorage('Transport')
-        : setStorage('Transport', e.target.value);
-
-      // Only the libcurl transport mode supports TOR at the moment.
-      let torCheck = document.getElementsByClassName('useonion');
-      if (
-        e.target.value !== 'libcurl' &&
-        checkBooleanState(torCheck[0]) === true
-      )
-        classUpdateHandler(torCheck, 'off', classEvent(torCheck, 'change'))();
-    }
-
-    if (e.isTrusted) location.reload();
   });
 
   attachClassEventListener('theme-list', 'change', (e) => {
@@ -394,32 +371,17 @@ if (document.getElementById('csel')) {
     }
   });
 
-  /* Allow users to toggle onion routing in Ultraviolet with the UI. Only
-   * the libcurl transport mode supports TOR at the moment, so ensure that
-   * users are aware that they cannot use TOR with other modes.
-   */
   attachClassEventListener('useonion', 'change', (e) => {
-    let unselectedModes = document.querySelectorAll(
-      '.{{wisp-transport}}-list input:not([value={{libcurl}}]),.region-list'
-    );
-    const wispTransportList = document.getElementsByClassName(
-        '{{wisp-transport}}-list'
-      ),
-      regionList = document.getElementsByClassName('region-list');
+    const regionList = document.getElementsByClassName('region-list');
     if (checkBooleanState(e.target) === true) {
-      classUpdateHandler(
-        wispTransportList,
-        '{{libcurl}}',
-        classEvent(wispTransportList, 'change')
-      )();
       classUpdateHandler(regionList, 'off', classEvent(regionList, 'change'))();
-      unselectedModes.forEach((e) => {
+      Array.from(regionList).forEach((e) => {
         e.setAttribute('disabled', 'true');
       });
       setStorage('UseSocks5', 'tor');
       classUpdateHandler(document.getElementsByClassName('useonion'), 'on')();
     } else {
-      unselectedModes.forEach((e) => {
+      Array.from(regionList).forEach((e) => {
         e.removeAttribute('disabled');
       });
 
@@ -482,7 +444,7 @@ if (document.getElementById('csel')) {
 
     if (enabled) {
       setStorage('ErudaEnabled', true);
-      const moduleLocation = '{{route}}{{eruda/eruda.js}}';
+      const moduleLocation = route('eruda/eruda.js');
 
       import(moduleLocation).then((module) => {
         if (!self.eruda || !self.eruda.init) return;
@@ -524,13 +486,7 @@ useStorageArgs('SearchEngine', (s) => {
   )();
 });
 
-// Load the Wisp transport mode that was last used, or use the default.
-useStorageArgs('Transport', (s) => {
-  classUpdateHandler(
-    document.getElementsByClassName('{{wisp-transport}}-list'),
-    s || defaultMode
-  )();
-});
+if (readStorage('Transport') !== undefined) removeStorage('Transport');
 
 // Ads are disabled by default. Load ads if ads were enabled previously.
 // Change !== to === here if ads should be enabled by default.
