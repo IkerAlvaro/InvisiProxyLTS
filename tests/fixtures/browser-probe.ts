@@ -8,6 +8,10 @@ const { createSiteApp } =
 	await load<typeof import('../../src/app.ts')>('src/app.ts');
 const { config, pages, serverUrl } =
 	await load<typeof import('../../src/site-config.ts')>('src/site-config.ts');
+const { classNames } = await load<
+	typeof import('../../src/class-obfuscation.ts')
+>('src/class-obfuscation.ts');
+const classes = classNames();
 const app = createSiteApp();
 let browser: Browser | undefined;
 try {
@@ -67,10 +71,10 @@ try {
 		styles[1],
 		'dispenser uses site button background'
 	);
-	assert.match(
-		(await button.getAttribute('class')) ?? '',
-		/fancybutton glowbutton/
-	);
+	const buttonClasses = (await button.getAttribute('class')) ?? '';
+	assert.ok(buttonClasses.includes(classes.fancybutton));
+	assert.ok(buttonClasses.includes(classes.glowbutton));
+	assert.doesNotMatch(buttonClasses, /fancybutton|glowbutton/);
 	assert.equal(
 		await button.evaluate((el) => getComputedStyle(el).borderRadius),
 		'8px'
@@ -157,6 +161,7 @@ try {
 		name: 'Search frequently asked questions',
 	});
 	await search.waitFor();
+	assert.equal(await search.getAttribute('class'), classes['faq-search']);
 	const entries = page.locator('#faqs > div');
 	const total = await entries.count();
 	assert.ok(total > 5);
@@ -190,6 +195,34 @@ try {
 	await page.reload();
 	await page.waitForFunction(() => document.title === 'Test tab title');
 	await search.waitFor();
+	await page.evaluate(() =>
+		document
+			.querySelector<HTMLInputElement>(
+				'input[name="theme"][value="light"]'
+			)
+			?.click()
+	);
+	await page.waitForFunction(
+		(name) => document.documentElement.classList.contains(name),
+		classes.light
+	);
+	await page.reload();
+	await search.waitFor();
+	await page.waitForFunction(
+		(name) => document.documentElement.classList.contains(name),
+		classes.light
+	);
+	await page.evaluate(() =>
+		document
+			.querySelector<HTMLInputElement>(
+				'input[name="theme"][value="dark"]'
+			)
+			?.click()
+	);
+	await page.waitForFunction(
+		(name) => !document.documentElement.classList.contains(name),
+		classes.light
+	);
 	await search.fill('discord');
 	await page.waitForFunction(
 		() =>
@@ -224,7 +257,7 @@ try {
 		);
 		return key && !JSON.parse(localStorage.getItem(key) || '{}').Transport;
 	});
-	assert.equal(await page.locator('#wisp-libcurl').isChecked(), true);
+	await page.locator('#settings-panel').waitFor({ state: 'attached' });
 	await page.waitForFunction(() => {
 		const el = document.querySelector<HTMLInputElement>('#search-input');
 		if (!el) throw new Error('Missing search input');

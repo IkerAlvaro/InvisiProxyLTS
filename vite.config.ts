@@ -3,6 +3,7 @@ import solid from 'vite-plugin-solid';
 import { config, serverUrl, serverPort } from './src/routes.ts';
 import { siteBuildPlugin } from './src/build.ts';
 import { backendPlugin, backendPort } from './src/vite-server.ts';
+import { browserObfuscationPlugin } from './src/obfuscation.ts';
 
 export default defineConfig(
 	async ({ command, isPreview }): Promise<UserConfig> => {
@@ -21,6 +22,7 @@ export default defineConfig(
 				siteBuildPlugin(),
 				backendPlugin(port),
 				solid({ ssr: true }),
+				browserObfuscationPlugin(),
 			],
 			server: {
 				host: true,

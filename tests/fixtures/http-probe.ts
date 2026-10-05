@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import { readFile, readdir, writeFile } from 'node:fs/promises';
-import { join } from 'node:path';
+import { basename, dirname, join } from 'node:path';
 import { pathToFileURL } from 'node:url';
 import { gunzipSync } from 'node:zlib';
 import { parse, type DefaultTreeAdapterTypes } from 'parse5';
@@ -117,6 +117,48 @@ try {
 		);
 		assert.equal(response.statusCode, 200, `${prefix}/${name}`);
 		assert.ok(response.rawPayload.length > 0);
+	}
+	for (const name of [
+		'common.js',
+		'csel.js',
+		'card.js',
+		'link.js',
+		'loader.js',
+		'register-sw.js',
+		'faq-search.js',
+	]) {
+		const response = await app.inject(`${base}assets/js/${name}`);
+		assert.equal(response.statusCode, 200, name);
+		assert.ok(
+			response.body.startsWith('/* InvisiProxy obfuscated */'),
+			name
+		);
+	}
+	assert.equal(
+		(await app.inject(`${base}assets/css/style.css`)).statusCode,
+		200
+	);
+	for (const [source, output] of [
+		[
+			'node_modules/@mercuryworkshop/scramjet-controller/dist/controller.api.js',
+			'scram/controller.api.js',
+		],
+		[
+			'node_modules/@mercuryworkshop/libcurl-transport/dist/index.mjs',
+			'libcurl/index.mjs',
+		],
+	]) {
+		assert.deepEqual(
+			await readFile(
+				join(
+					'views/dist',
+					dirname(output),
+					flatAltPaths[`files/${basename(output)}`] ||
+						basename(output)
+				)
+			),
+			await readFile(source)
+		);
 	}
 	for (const path of [
 		'missing.txt',

@@ -90,7 +90,7 @@ export default function HeadContent() {
 			<Inline>
 				<link
 					rel={'stylesheet'}
-					href={route('assets/css/styles.css', 'inline')}
+					href={route('assets/css/style.css', 'inline')}
 				/>
 			</Inline>
 			<link

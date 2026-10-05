@@ -3,6 +3,7 @@ import solid from 'vite-plugin-solid';
 import { fileURLToPath } from 'node:url';
 import { buildValues } from './build-values.ts';
 import type { SiteValues } from './site-values.ts';
+import { obfuscateDocument } from './obfuscation.ts';
 
 export async function renderSolidDocuments(
 	context: SiteValues = buildValues
@@ -27,7 +28,15 @@ export async function renderSolidDocuments(
 		'data:text/javascript;base64,' +
 			Buffer.from(chunk.code).toString('base64')
 	);
-	return renderer.renderDocuments(context);
+	const documents: Record<string, string> = renderer.renderDocuments(context);
+	return Object.fromEntries(
+		await Promise.all(
+			Object.entries(documents).map(async ([path, html]) => [
+				path,
+				await obfuscateDocument(html, path),
+			])
+		)
+	);
 }
 
 export const solidDocuments = await renderSolidDocuments({

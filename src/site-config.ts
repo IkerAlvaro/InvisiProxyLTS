@@ -204,10 +204,7 @@ const cookingInserts = insert.content,
 	textMasks = insert.textMasks,
 	splashRandom = insert.splash,
 	versionValue = insert.version,
-	cacheBustList: Record<string, string> = {
-		'styles.css': 'styles-1778310233.css',
-		'common.js': 'common-1778310233.js',
-	};
+	cacheBustList: Record<string, string> = {};
 
 export {
 	config,

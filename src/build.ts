@@ -24,6 +24,8 @@ import { route } from './site-values.ts';
 import { solidDocuments } from './solid.ts';
 import { tryReadFile } from './files.ts';
 import { renderSolidDocuments } from './solid.ts';
+import { browserObfuscationPlugin } from './obfuscation.ts';
+import { rewriteStylesheet } from './class-obfuscation.ts';
 
 const projectUrl = new URL('../', import.meta.url);
 const projectPath = fileURLToPath(projectUrl);
@@ -42,6 +44,7 @@ export async function buildBrowserAsset(entry: string, target: string) {
 		publicDir: false,
 		logLevel: 'error',
 		plugins: [
+			browserObfuscationPlugin(),
 			{
 				name: 'invisiproxy-build-values',
 				resolveId(id) {
@@ -88,7 +91,10 @@ export async function buildStylesheet(entry: string) {
 		/url\((["']?)(\/assets\/[^)"']+)\1\)/g,
 		(_match, quote, path) => `url(${quote}${route(path)}${quote})`
 	);
-	writeFileSync(entry, css);
+	writeFileSync(
+		entry,
+		process.env.INVISIPROXY_VITE_DEV === '1' ? css : rewriteStylesheet(css)
+	);
 	const result = await build({
 		configFile: false,
 		publicDir: false,
@@ -98,7 +104,10 @@ export async function buildStylesheet(entry: string) {
 			emptyOutDir: false,
 			cssCodeSplit: true,
 			minify: config.minifyScripts,
-			cssMinify: config.minifyScripts,
+			cssMinify:
+				process.env.INVISIPROXY_VITE_DEV === '1'
+					? config.minifyScripts
+					: true,
 			lib: {
 				entry,
 				formats: ['es'],
@@ -190,11 +199,20 @@ export function siteBuildPlugin(): Plugin {
 						) {
 							writeFileSync(
 								targetPath,
-								tryReadFile(
-									`${base + dir}/${file}`,
-									projectUrl,
-									false
-								).toString()
+								file.endsWith('.json')
+									? JSON.stringify(
+											JSON.parse(
+												readFileSync(
+													oldLocation,
+													'utf8'
+												)
+											)
+										)
+									: tryReadFile(
+											`${base + dir}/${file}`,
+											projectUrl,
+											false
+										).toString()
 							);
 							if (config.verbose) {
 								console.log(
