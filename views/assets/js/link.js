@@ -1,8 +1,12 @@
+import { route } from 'build:invisiproxy';
+
 (() => {
 	const button = document.getElementById('dispense-link');
 	const status = document.getElementById('dispenser-status');
 	const result = document.getElementById('dispensed-link');
 	if (!button || !status || !result) return;
+	if (location.pathname === route('/links'))
+		document.getElementById('mirror-links-menu').showPopover();
 
 	button.addEventListener('click', async () => {
 		button.disabled = true;

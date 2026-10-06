@@ -1,4 +1,5 @@
 import { values, route, maskText } from 'build:invisiproxy';
+import { isMobileBrowser, selectedTransport } from '../../../src/browser/transport.ts';
 /* -----------------------------------------------
 /* Authors: Yoct, OlyB, b4kt
 /* GNU Affero General Public License v3.0: https://www.gnu.org/licenses/agpl-3.0.en.html
@@ -154,7 +155,6 @@ if (document.getElementById('csel')) {
       .getElementsByClassName('dropdown-settings')[0]
       .parentElement.querySelector("button.link-button");
 
-  // TODO: Add functionality to adapt listeners for the Wisp Transport List.
   // TODO: Properly comment this code.
   const attachClassEventListener = (classSelector, ...args) => {
     const eventTrigger = args[0],
@@ -228,13 +228,17 @@ if (document.getElementById('csel')) {
   });
   */
 
-  // Provides users with a handy set of title and icon autofill options.
+  // Apply the selected preset's title and icon immediately.
   attachEventListener('icon-list', 'change', (e) => {
     let titleform = document.getElementById('titleform'),
       iconform = document.getElementById('iconform');
     [titleform.firstElementChild.value, iconform.firstElementChild.value] = (
       presetIcons[e.target.value] || ' \n '
     ).split(' \n ');
+    if (e.target.value && presetIcons[e.target.value]) {
+      titleform.requestSubmit();
+      iconform.requestSubmit();
+    }
   });
 
   attachClassEventListener('search-engine-list', 'change', (e) => {
@@ -244,14 +248,10 @@ if (document.getElementById('csel')) {
   });
 
   attachClassEventListener('theme-list', 'change', (e) => {
-    if (e.target.checked) {
-      let themeList = e.target.closest('.theme-list');
-      if (
-        !themeList.querySelector('input:checked') ||
-        e.target.value === defaultTheme
-      ) {
-        const theme = readStorage('Theme');
-        if (theme) document.documentElement.classList.toggle(theme, false);
+    if (e.target.tagName === 'SELECT' || e.target.checked) {
+      const theme = readStorage('Theme');
+      if (theme) document.documentElement.classList.toggle(theme, false);
+      if (e.target.value === defaultTheme) {
         removeStorage('Theme');
       } else {
         setStorage('Theme', e.target.value);
@@ -429,7 +429,7 @@ if (document.getElementById('csel')) {
   });
 
   attachClassEventListener('history-toggle', 'change', (e) => {
-    const value = e.target.value;
+    const value = e.target.checked ? 'hidehistory' : 'none';
 
     value === 'none'
       ? (setStorage('HistoryHide', 'none'), removeCookie('HistoryHide'))
@@ -462,6 +462,14 @@ if (document.getElementById('csel')) {
 
 /* LOAD USER-SAVED SETTINGS */
 
+const browsingPreferences = document.getElementById('settings-panel');
+if (browsingPreferences) {
+  browsingPreferences.open = readStorage('BrowsingPreferencesOpen') === true;
+  browsingPreferences.addEventListener('toggle', () => {
+    setStorage('BrowsingPreferencesOpen', browsingPreferences.open);
+  });
+}
+
 // Load a custom page title and favicon if it was previously stored.
 useStorageArgs('Title', (s) => {
   s != undefined && pageTitle(s);
@@ -480,13 +488,36 @@ useStorageArgs('Theme', (s) => {
 });
 
 useStorageArgs('SearchEngine', (s) => {
+  if (s && !Object.entries(values.labels).some(([name, label]) => name !== 'libcurl' && label === s)) {
+    removeStorage('SearchEngine');
+    s = undefined;
+  }
   classUpdateHandler(
     document.getElementsByClassName('search-engine-list'),
     s || defaultSearch
   )();
 });
 
-if (readStorage('Transport') !== undefined) removeStorage('Transport');
+const mobileBrowser = isMobileBrowser(),
+  transportName = selectedTransport(readStorage('Transport'), mobileBrowser);
+if (mobileBrowser || transportName === 'epoxy') setStorage('Transport', transportName);
+else if (readStorage('Transport') !== undefined) removeStorage('Transport');
+for (const transportSelector of document.getElementsByClassName('transport-list')) {
+  transportSelector.value = transportName;
+  transportSelector.closest('.transport-setting').hidden = mobileBrowser;
+  transportSelector.addEventListener('change', () => {
+    setStorage('Transport', transportSelector.value);
+    location.reload();
+  });
+}
+for (const regionSelector of document.getElementsByClassName('region-list')) {
+  regionSelector.disabled = transportName === 'epoxy';
+  regionSelector.title = transportName === 'epoxy' ? 'Region routing requires libcurl.' : '';
+}
+for (const torToggle of document.getElementsByClassName('useonion')) {
+  torToggle.disabled = transportName === 'epoxy';
+  torToggle.title = transportName === 'epoxy' ? 'Tor routing requires libcurl.' : '';
+}
 
 // Ads are disabled by default. Load ads if ads were enabled previously.
 // Change !== to === here if ads should be enabled by default.
@@ -509,7 +540,7 @@ useStorageArgs('UseSocks5', (s) => {
 useStorageArgs('HistoryHide', (s) => {
   classUpdateHandler(
     document.getElementsByClassName('history-toggle'),
-    s || 'hidehistory'
+    s === 'hidehistory' || !s
   )();
 
   if (s === 'hidehistory' || !s) {

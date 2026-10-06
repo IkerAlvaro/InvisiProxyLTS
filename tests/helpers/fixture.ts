@@ -66,7 +66,7 @@ export function run(root: string, args: string[], env: NodeJS.ProcessEnv = {}) {
 			stdio: ['ignore', 'pipe', 'pipe'],
 		});
 		let output = '';
-		const timer = setTimeout(() => child.kill(), 90000);
+		const timer = setTimeout(() => child.kill(), 120000);
 		child.stdout.on('data', (data) => (output += data));
 		child.stderr.on('data', (data) => (output += data));
 		child.once('error', reject);

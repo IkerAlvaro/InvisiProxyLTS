@@ -3,7 +3,7 @@ module.exports = {
 		{
 			name: 'invisiproxy',
 			cwd: __dirname,
-			script: './backend.ts',
+			script: './dist/server.js',
 			interpreter: process.execPath,
 			exec_mode: 'fork',
 			instances: 1,

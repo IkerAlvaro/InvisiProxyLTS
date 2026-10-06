@@ -1,4 +1,14 @@
 import { Cooking, Inline, route } from '../document-helpers.tsx';
+import {
+	ParticlesScript,
+	TooltipScripts,
+	ScramjetScripts,
+	RegisterServiceWorkerScript,
+	PageScripts,
+	PageDescription,
+} from '../components/HeadScripts.tsx';
+import HeadContent from '../components/HeadContent.tsx';
+import ProxyPreloads from '../components/ProxyPreloads.tsx';
 import AntiExfil from '../components/AntiExfil.tsx';
 import Header from '../components/Header.tsx';
 import ProxySettings from '../components/ProxySettings.tsx';
@@ -9,16 +19,16 @@ export default function YouTube() {
 		<>
 			<Cooking />
 			<AntiExfil />
-			<div id={'header'} class={'fullwidth'}>
+			<div id="header" class="fullwidth">
 				<Header />
 			</div>
-			<div id={'background'} class={'fullwidth'}></div>
+			<div id="background" class="fullwidth"></div>
 			<Cooking />
-			<div data-aos={'fade-right'} class={'hero-grid-container'}>
-				<div class={'box-hero'}>
-					<div class={'hero-content'}>
-						<div class={'proxy-header text-center'}>
-							<h1 class={'bigtitle'}>Youtube Proxy</h1>
+			<div data-aos="fade-right" class="hero-grid-container">
+				<div class="box-hero">
+					<div class="hero-content">
+						<div class="proxy-header text-center">
+							<h1 class="bigtitle">Youtube Proxy</h1>
 							<p>
 								YouTube now has enhanced support with onsite
 								navigation with Scramjet! Simply use the buttons
@@ -38,18 +48,18 @@ export default function YouTube() {
 							View the <a href={route('/questions')}>FAQ</a> page
 							if you have any issues with the proxy.
 						</div>
-						<div class={'proxy-form text-center'}>
-							<div class={'glist'}>
+						<div class="proxy-form text-center">
+							<div class="glist">
 								<button
 									type="button"
-									id={'pr-yt'}
+									id="pr-yt"
 									class="fancybutton glowbutton pr-go2 link-button"
 								>
 									YouTube
 								</button>
 								<button
 									type="button"
-									id={'pr-iv'}
+									id="pr-iv"
 									class="fancybutton glowbutton pr-go2 link-button"
 								>
 									Invidious
@@ -60,13 +70,29 @@ export default function YouTube() {
 					</div>
 				</div>
 			</div>
-			<div id={'footer'} class={'fullwidth'}>
+			<div id="footer" class="fullwidth">
 				<Footer />
 			</div>
 			<Cooking />
 			<Inline>
 				<script src={route('assets/js/card.js', 'inline')} />
 			</Inline>
+		</>
+	);
+}
+
+export function Head() {
+	return (
+		<>
+			<title>InvisiProxy LTS | YouTube Proxy</title>
+			<PageDescription />
+			<ProxyPreloads />
+			<HeadContent />
+			<ParticlesScript />
+			<ScramjetScripts />
+			<RegisterServiceWorkerScript />
+			<TooltipScripts />
+			<PageScripts />
 		</>
 	);
 }

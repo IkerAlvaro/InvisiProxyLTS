@@ -1,4 +1,4 @@
-import { values, route } from 'build:invisiproxy';
+import { values } from 'build:invisiproxy';
 (() => {
   const windowEventListeners = [],
     documentEventListeners = [],
@@ -68,15 +68,20 @@ import { values, route } from 'build:invisiproxy';
     });
   };
 
+  const disguisedPath = (pathname) => {
+    pathname = pathname.replace(/\/+/g, '/');
+    return (
+      (pathname === values.basePath ? pathname : pathname.replace(/\/$/, '')) +
+      '.ico'
+    );
+  };
+
   const loadPage =
     (destination = origin, pushState = true) =>
     () => {
       _window
         .fetch(
-          retrieveUrl(
-            destination.pathname.replace(/\/+/g, '/').replace(/\/$/, '') +
-              '.ico'
-          ),
+          retrieveUrl(disguisedPath(destination.pathname)),
           { mode: 'same-origin' }
         )
         .then((response) => {
@@ -190,8 +195,6 @@ import { values, route } from 'build:invisiproxy';
                             )
                               elementCopy.addEventListener('click', (event) => {
                                 event.preventDefault();
-                                if (attrValue === route("/"))
-                                  attrValue = route("/index");
                                 loadPage(new URL(attrValue, origin))();
                               });
                             else if (nodeName === 'link') {

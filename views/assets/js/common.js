@@ -642,7 +642,7 @@ const preparePage = async () => {
 
     if (navList) {
       // List items stored in JSON format will be returned as a JS object.
-      const data = await fetch(`${route("/assets/json/")}${filename}.json`, {
+      const data = await fetch(route(`/assets/json/${filename}.json`), {
         mode: 'same-origin',
       }).then((response) => response.json());
 
@@ -675,7 +675,7 @@ const preparePage = async () => {
               (credits = document.createElement('p')));
 
             a.href = '#';
-            img.src = `${route("/assets/img/")}${dir}/` + item.img;
+            img.src = route(`/assets/img/${dir}/${item.img}`);
             title.textContent = item.name;
             desc.textContent = item.description;
             credits.textContent = item.credits;

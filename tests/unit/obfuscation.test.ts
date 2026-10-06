@@ -2,7 +2,13 @@ import assert from 'node:assert/strict';
 import test from 'node:test';
 import { runInNewContext } from 'node:vm';
 import { parse, type DefaultTreeAdapterTypes } from 'parse5';
-import { obfuscateDocument, obfuscateScript } from '../../src/obfuscation.ts';
+import { obfuscatedMarker } from '../../src/constants.ts';
+import { obfuscateDocument } from '../../src/obfuscation/documents.ts';
+import {
+	obfuscateScript,
+	obfuscateVendorScript,
+	stripObfuscatedMarker,
+} from '../../src/obfuscation/scripts.ts';
 
 test('obfuscation hides identifiers and strings while preserving public object interfaces', () => {
 	const code = obfuscateScript(
@@ -21,22 +27,58 @@ test('obfuscation hides identifiers and strings while preserving public object i
 	runInNewContext(code, context);
 	assert.equal(context.result, 'private-message-value');
 	assert.equal(obfuscateScript(code, 'inline.js'), code);
+	const finished = stripObfuscatedMarker(code);
+	assert.ok(!finished.includes(obfuscatedMarker));
+	const publishedContext: Record<string, unknown> = {};
+	runInNewContext(finished, publishedContext);
+	assert.equal(publishedContext.result, 'private-message-value');
+});
+
+test('vendor obfuscation preserves public APIs and vendor DOM selectors', () => {
+	const code = stripObfuscatedMarker(
+		obfuscateVendorScript(
+			`
+		(() => {
+			function internalFunction(argument) { document.querySelector('.fancybutton'); return argument + 1; }
+			globalThis.Vendor = { run: internalFunction };
+		})();
+	`,
+			'vendor.js'
+		)
+	);
+	assert.doesNotMatch(code, /internalFunction/);
+	assert.ok(!code.includes(obfuscatedMarker));
+	const selectors: string[] = [];
+	const context = {
+		document: {
+			querySelector: (selector: string) => selectors.push(selector),
+		},
+	};
+	runInNewContext(`${code}; globalThis.result = Vendor.run(41);`, context);
+	assert.equal((context as typeof context & { result: number }).result, 42);
+	assert.deepEqual(selectors, ['.fancybutton']);
 });
 
 test('HTML obfuscation handles executable inline scripts and preserves data and vendor script references', async () => {
+	const bundled = obfuscateScript(
+		"globalThis.bundledResult = 'bundled-secret';",
+		'bundle.js'
+	);
 	const html = await obfuscateDocument(
 		`<!doctype html><html><head>
 		<script src="/scram/controller.api.js"></script>
 		<script type="application/ld+json">{"name":"Structured data"}</script>
 		</head><body><!-- comment --><pre>  literal  spacing\n</pre>
 		<script>const privateValue = 'inline-secret'; globalThis.result = privateValue;</script>
+		<script id="bundled">${bundled}</script>
 		</body></html>`,
 		'test.html'
 	);
 	assert.doesNotMatch(html, /privateValue|inline-secret|<!-- comment -->/);
+	assert.ok(!html.includes(obfuscatedMarker));
 	assert.match(html, /src="\/scram\/controller.api.js"/);
 	assert.match(html, /\{"name":"Structured data"\}/);
-	assert.match(html, /<pre>  literal  spacing\n<\/pre>/);
+	assert.match(html, /<pre> {2}literal {2}spacing\n<\/pre>/);
 	function scripts(
 		node: DefaultTreeAdapterTypes.Node
 	): DefaultTreeAdapterTypes.Element[] {
@@ -53,4 +95,16 @@ test('HTML obfuscation handles executable inline scripts and preserves data and 
 	const context: Record<string, unknown> = {};
 	runInNewContext(source, context);
 	assert.equal(context.result, 'inline-secret');
+	const bundledScript = scripts(parse(html)).find((node) =>
+		node.attrs.some(
+			(attr) => attr.name === 'id' && attr.value === 'bundled'
+		)
+	);
+	assert.ok(bundledScript);
+	const bundledSource = bundledScript.childNodes
+		.map((node) => ('value' in node ? node.value : ''))
+		.join('');
+	assert.equal(bundledSource, stripObfuscatedMarker(bundled));
+	runInNewContext(bundledSource, context);
+	assert.equal(context.bundledResult, 'bundled-secret');
 });

@@ -7,8 +7,8 @@ import {
 	rewriteClasses,
 	rewriteSelector,
 	rewriteStylesheet,
-} from '../../src/class-obfuscation.ts';
-import { obfuscateDocument } from '../../src/obfuscation.ts';
+} from '../../src/obfuscation/classes.ts';
+import { obfuscateDocument } from '../../src/obfuscation/documents.ts';
 
 test('classes use the same names in CSS, HTML and browser-generated markup while preserving vendors', async () => {
 	const names = classNames();

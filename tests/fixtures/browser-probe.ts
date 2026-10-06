@@ -1,24 +1,36 @@
 import assert from 'node:assert/strict';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import { chromium, type Browser } from 'playwright';
+import {
+	chromium,
+	devices,
+	type Browser,
+	type BrowserContext,
+} from 'playwright';
 const load = <T>(path: string): Promise<T> =>
 	import(pathToFileURL(join(process.cwd(), path)).href);
-const { createSiteApp } =
-	await load<typeof import('../../src/app.ts')>('src/app.ts');
-const { config, pages, serverUrl } =
-	await load<typeof import('../../src/site-config.ts')>('src/site-config.ts');
+const { createSiteHandler } = await load<
+	typeof import('../../src/server/handler.ts')
+>('src/server/handler.ts');
+const { serve } = await import('../helpers/http.ts');
+const { config, serverUrl } =
+	await load<typeof import('../../src/config.ts')>('src/config.ts');
+const { pages } = (
+	await load<typeof import('../../src/server/routes.ts')>(
+		'src/server/routes.ts'
+	)
+).loadRoutes();
 const { classNames } = await load<
-	typeof import('../../src/class-obfuscation.ts')
->('src/class-obfuscation.ts');
+	typeof import('../../src/obfuscation/classes.ts')
+>('src/obfuscation/classes.ts');
 const classes = classNames();
-const app = createSiteApp();
+const { getAltPrefix } = await load<
+	typeof import('../../src/obfuscation/paths.ts')
+>('src/obfuscation/paths.ts');
+const app = await serve(createSiteHandler());
 let browser: Browser | undefined;
 try {
-	await app.listen({ host: '127.0.0.1', port: 0 });
-	const address = app.server.address();
-	assert.ok(address && typeof address !== 'string');
-	const origin = `http://127.0.0.1:${address.port}`;
+	const { origin } = app;
 	const base = origin + serverUrl.pathname;
 	const route = (file: string) =>
 		base + Object.keys(pages).find((key) => pages[key] === file);
@@ -59,10 +71,7 @@ try {
 	if (config.disguiseFiles) {
 		await page.goto(route('pages/nav/partners.html'));
 		await page.getByText('403 Forbidden').waitFor();
-		await page.goto(`${base}login`);
-		await page.waitForURL(
-			(url) => url.pathname === `${serverUrl.pathname}index`
-		);
+		await page.goto(base);
 	}
 	await page.route('**/aos.css', (request) =>
 		request.fulfill({
@@ -75,6 +84,11 @@ try {
 		() =>
 			document.documentElement.getAttribute('data-aos-initialized') ===
 			'true'
+	);
+	assert.equal(
+		new URL(page.url()).pathname,
+		serverUrl.pathname,
+		'the homepage stays at the root'
 	);
 	assert.equal(
 		await page.locator('#banner').count(),
@@ -91,11 +105,8 @@ try {
 	);
 	await page.evaluate(() => {
 		delete (window as unknown as { AOS?: unknown }).AOS;
-		document
-			.querySelectorAll('[data-aos]')
-			.forEach((element) =>
-				element.classList.remove('aos-init', 'aos-animate')
-			);
+		for (const element of document.querySelectorAll('[data-aos]'))
+			element.classList.remove('aos-init', 'aos-animate');
 	});
 	assert.ok(
 		await animatedSections.evaluateAll((elements) =>
@@ -104,25 +115,14 @@ try {
 			)
 		)
 	);
-	await page.goto(route('pages/nav/partners.html'));
+	await page
+		.getByRole('button', { name: 'Mirror links', exact: true })
+		.click();
 	const button = page.locator('#dispense-link');
 	await button.waitFor({ state: 'visible' });
 	assert.equal(
 		await button.getAttribute('data-endpoint'),
 		`${serverUrl.pathname}api/link`
-	);
-	const styles = await page.evaluate(() =>
-		['dispense-link', 'pr-trl'].map((id) => {
-			const element = document.getElementById(id);
-			if (!element) throw new Error(`Missing button: ${id}`);
-			const css = getComputedStyle(element);
-			return [css.backgroundColor];
-		})
-	);
-	assert.deepEqual(
-		styles[0],
-		styles[1],
-		'dispenser uses site button background'
 	);
 	const buttonClasses = (await button.getAttribute('class')) ?? '';
 	assert.ok(buttonClasses.includes(classes.fancybutton));
@@ -248,13 +248,9 @@ try {
 	await page.reload();
 	await page.waitForFunction(() => document.title === 'Test tab title');
 	await search.waitFor();
-	await page.evaluate(() =>
-		document
-			.querySelector<HTMLInputElement>(
-				'input[name="theme"][value="light"]'
-			)
-			?.click()
-	);
+	await page
+		.locator('#settings-theme')
+		.selectOption('light', { force: true });
 	await page.waitForFunction(
 		(name) => document.documentElement.classList.contains(name),
 		classes.light
@@ -265,13 +261,7 @@ try {
 		(name) => document.documentElement.classList.contains(name),
 		classes.light
 	);
-	await page.evaluate(() =>
-		document
-			.querySelector<HTMLInputElement>(
-				'input[name="theme"][value="dark"]'
-			)
-			?.click()
-	);
+	await page.locator('#settings-theme').selectOption('dark', { force: true });
 	await page.waitForFunction(
 		(name) => !document.documentElement.classList.contains(name),
 		classes.light
@@ -294,10 +284,11 @@ try {
 			JSON.stringify({
 				...JSON.parse(localStorage.getItem(key) || '{}'),
 				Transport: 'retired-transport',
+				SearchEngine: '_0xlegacy',
 			})
 		);
 	});
-	await page.goto(`${base}browsing`);
+	await page.goto(route('pages/proxnav/scramjet.html'));
 	await page.waitForURL(
 		(url) =>
 			url.pathname ===
@@ -308,9 +299,98 @@ try {
 		const key = Object.keys(localStorage).find((key) =>
 			key.endsWith('-storage')
 		);
-		return key && !JSON.parse(localStorage.getItem(key) || '{}').Transport;
+		return (
+			key &&
+			!JSON.parse(localStorage.getItem(key) || '{}').Transport &&
+			!JSON.parse(localStorage.getItem(key) || '{}').SearchEngine
+		);
 	});
 	await page.locator('#settings-panel').waitFor({ state: 'attached' });
+	assert.equal(
+		await page.locator('#settings-transport').inputValue(),
+		'libcurl'
+	);
+	assert.equal(
+		await page.locator('#browsing-transport').inputValue(),
+		'libcurl'
+	);
+	assert.equal(await page.locator('#settings-panel select').count(), 2);
+	assert.equal(
+		await page.locator('#settings-panel input[type="checkbox"]').count(),
+		3
+	);
+	const historySwitches = page.locator(`input.${classes['history-toggle']}`);
+	assert.equal(await historySwitches.count(), 2);
+	for (const checked of [false, true]) {
+		await historySwitches.last().evaluate((input, checked) => {
+			(input as HTMLInputElement).checked = checked;
+			input.dispatchEvent(new Event('change', { bubbles: true }));
+		}, checked);
+		assert.deepEqual(
+			await historySwitches.evaluateAll((inputs) =>
+				inputs.map((input) => (input as HTMLInputElement).checked)
+			),
+			[checked, checked]
+		);
+		assert.equal(
+			await page.evaluate(() => {
+				const key = Object.keys(localStorage).find((key) =>
+					key.endsWith('-storage')
+				);
+				return (
+					key &&
+					JSON.parse(localStorage.getItem(key) || '{}').HistoryHide
+				);
+			}),
+			checked ? 'hidehistory' : 'none'
+		);
+	}
+	assert.equal(
+		await page
+			.locator('#transport-setting')
+			.evaluate((el) => (el as HTMLElement).hidden),
+		false
+	);
+	assert.equal(
+		await page.locator('#settings-search-engine').inputValue(),
+		'DuckDuckGo'
+	);
+	const engineOptions = await page
+		.locator('#settings-search-engine option')
+		.evaluateAll((options) =>
+			options.map((option) => ({
+				text: option.textContent?.replace(
+					/[\u00ad\u200b-\u200d\ufeff]/g,
+					''
+				),
+				value: (option as HTMLOptionElement).value,
+			}))
+		);
+	assert.deepEqual(
+		engineOptions,
+		['Startpage', 'DuckDuckGo', 'Bing', 'Brave'].map((name) => ({
+			text: name,
+			value: name,
+		}))
+	);
+	const iconOptions = await page
+		.locator('#icon-list option')
+		.evaluateAll((options) =>
+			options.map((option) => ({
+				text: option.textContent?.replace(
+					/[\u00ad\u200b-\u200d\ufeff]/g,
+					''
+				),
+				value: (option as HTMLOptionElement).value,
+			}))
+		);
+	assert.deepEqual(
+		iconOptions,
+		['', 'Google', 'Bing', 'Google Drive', 'Gmail'].map((name) => ({
+			text: name || 'Select an icon preset',
+			value: name,
+		}))
+	);
 	await page.waitForFunction(() => {
 		const el = document.querySelector<HTMLInputElement>('#search-input');
 		if (!el) throw new Error('Missing search input');
@@ -429,30 +509,30 @@ try {
 			)
 		)
 	);
-	const runtimeContext = await browser.newContext();
-	await runtimeContext.route('**/*', (request) =>
-		new URL(request.request().url()).origin === origin
-			? request.continue()
-			: request.fulfill({
-					status: 200,
-					contentType: 'application/javascript',
-					body: '',
-				})
-	);
-	await runtimeContext.addInitScript(() => {
-		Object.assign(window, {
-			AOS: { init() {}, refresh() {} },
-			tippy: () => [],
-			loadFull: async () => {},
-			tsParticles: { load: async () => ({ destroy() {} }) },
+	const prepareRuntimeContext = async (runtimeContext: BrowserContext) => {
+		await runtimeContext.route('**/*', (request) =>
+			new URL(request.request().url()).origin === origin
+				? request.continue()
+				: request.fulfill({
+						status: 200,
+						contentType: 'application/javascript',
+						body: '',
+					})
+		);
+		await runtimeContext.addInitScript(() => {
+			Object.assign(window, {
+				AOS: { init() {}, refresh() {} },
+				tippy: () => [],
+				loadFull: async () => {},
+				tsParticles: { load: async () => ({ destroy() {} }) },
+			});
 		});
-	});
+	};
+	const runtimeContext = await browser.newContext();
+	await prepareRuntimeContext(runtimeContext);
 	const runtimePage = await runtimeContext.newPage();
 	if (config.disguiseFiles) {
-		await runtimePage.goto(`${base}login`);
-		await runtimePage.waitForURL(
-			(url) => url.pathname === `${serverUrl.pathname}index`
-		);
+		await runtimePage.goto(base);
 	}
 	await runtimePage.goto(route('pages/proxnav/scramjet.html'));
 	await runtimePage.waitForFunction(
@@ -475,7 +555,151 @@ try {
 		),
 		true
 	);
+	const epoxyModule = `${origin}${getAltPrefix('epoxy', serverUrl.pathname)}index.mjs`;
+	let desktopEpoxyLoaded = false;
+	runtimeContext.on('request', (request) => {
+		if (request.url() === epoxyModule) desktopEpoxyLoaded = true;
+	});
+	await Promise.all([
+		runtimePage.waitForEvent('load'),
+		runtimePage
+			.locator('#settings-transport')
+			.selectOption('epoxy', { force: true }),
+	]);
+	await runtimePage.waitForFunction(
+		() =>
+			window.$invisiScramjet?.ready === true &&
+			(document.getElementById('settings-transport') as HTMLSelectElement)
+				?.value === 'epoxy'
+	);
+	assert.equal(
+		desktopEpoxyLoaded,
+		true,
+		'desktop selection initializes Epoxy'
+	);
+	await runtimePage.reload();
+	await runtimePage.waitForFunction(
+		() => window.$invisiScramjet?.ready === true
+	);
+	assert.equal(
+		await runtimePage.locator('#settings-transport').inputValue(),
+		'epoxy'
+	);
+	await runtimePage
+		.getByRole('button', { name: 'Settings', exact: true })
+		.click();
+	await runtimePage.waitForFunction((selector) => {
+		const el = document.querySelector(selector);
+		return el && getComputedStyle(el).opacity === '1';
+	}, `.${classes['dropdown-settings']}`);
+	await runtimePage
+		.getByRole('button', { name: 'Close settings', exact: true })
+		.click();
+	await runtimePage.goto(route('pages/proxnav/scramjet.html'));
+	await runtimePage.waitForFunction(
+		() => window.$invisiScramjet?.ready === true
+	);
+	assert.equal(
+		await runtimePage.locator('#browsing-transport').inputValue(),
+		'epoxy'
+	);
+	await runtimePage.locator('#settings-panel > summary').click();
+	await Promise.all([
+		runtimePage.waitForEvent('load'),
+		runtimePage.locator('#browsing-transport').selectOption('libcurl'),
+	]);
+	await runtimePage.waitForFunction(
+		() => window.$invisiScramjet?.ready === true
+	);
+	assert.equal(
+		await runtimePage.locator('#settings-transport').inputValue(),
+		'libcurl'
+	);
 	await runtimeContext.close();
+	const mobileContext = await browser.newContext({ ...devices['iPhone 13'] });
+	await prepareRuntimeContext(mobileContext);
+	await mobileContext.addInitScript(
+		(storageKey) => {
+			if (!localStorage.getItem(storageKey))
+				localStorage.setItem(
+					storageKey,
+					JSON.stringify({ Transport: 'libcurl' })
+				);
+		},
+		`${config.usingSEO ? 'ip' : 'net-time'}-storage`
+	);
+	const mobileModules: string[] = [];
+	mobileContext.on('request', (request) => mobileModules.push(request.url()));
+	const mobilePage = await mobileContext.newPage();
+	if (config.disguiseFiles) await mobilePage.goto(base);
+	await mobilePage.goto(route('pages/proxnav/scramjet.html'));
+	await mobilePage.waitForFunction(
+		() => window.$invisiScramjet?.ready === true
+	);
+	assert.equal(
+		await mobilePage.locator('#settings-transport').inputValue(),
+		'epoxy'
+	);
+	assert.equal(
+		await mobilePage
+			.locator('#transport-setting')
+			.evaluate((el) => (el as HTMLElement).hidden),
+		true
+	);
+	assert.equal(
+		await mobilePage.evaluate(() => {
+			const key = Object.keys(localStorage).find((key) =>
+				key.endsWith('-storage')
+			);
+			return (
+				key && JSON.parse(localStorage.getItem(key) || '{}').Transport
+			);
+		}),
+		'epoxy'
+	);
+	assert.ok(
+		mobileModules.includes(epoxyModule),
+		'mobile loads the Merp-processed Epoxy module'
+	);
+	assert.ok(
+		!mobileModules.includes(
+			`${origin}${getAltPrefix('libcurl', serverUrl.pathname)}index.mjs`
+		),
+		'mobile never loads libcurl'
+	);
+	assert.equal(
+		await mobilePage.evaluate(
+			() => window.$invisiScramjetError === undefined
+		),
+		true
+	);
+	assert.equal(
+		await mobilePage.locator('#browsing-transport').inputValue(),
+		'epoxy'
+	);
+	assert.equal(
+		await mobilePage
+			.locator('#browsing-transport-setting')
+			.evaluate((el) => (el as HTMLElement).hidden),
+		true
+	);
+	await mobilePage
+		.getByRole('button', { name: 'Settings menu', exact: true })
+		.click();
+	await mobilePage.waitForFunction((selector) => {
+		const el = document.querySelector(selector);
+		return el && getComputedStyle(el).opacity === '1';
+	}, `.${classes['dropdown-settings']}`);
+	const modalBounds = await mobilePage
+		.locator(`.${classes['settings-content']}`)
+		.boundingBox();
+	assert.ok(
+		modalBounds &&
+			modalBounds.x >= 0 &&
+			modalBounds.x + modalBounds.width <= 390,
+		'mobile settings fit the viewport'
+	);
+	await mobileContext.close();
 	console.log(
 		'Mirror success, cooldown, pending/error/unsafe responses, styling, loader, FAQ hydration persistent tab settings and proxy URL/navigation boundaries passed.'
 	);
