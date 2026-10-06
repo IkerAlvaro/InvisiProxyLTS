@@ -34,7 +34,11 @@ export default function Scramjet() {
 								alt="Scramjet"
 							/>
 							<p>
-								<a href={route('/github/scramjet')}>
+								<a
+									href={route('/github/scramjet')}
+									target="_blank"
+									rel="noopener noreferrer"
+								>
 									<strong>Scramjet</strong>
 								</a>{' '}
 								is a web proxy designed with performance and

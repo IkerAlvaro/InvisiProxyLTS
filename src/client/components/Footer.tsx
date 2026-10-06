@@ -6,7 +6,7 @@ export default function Footer() {
 			<div class="footerflex">
 				<div class="footerbrand">
 					<h3>
-						<a href="/" title="InvisiProxy Homepage">
+						<a href={route('/')} title="InvisiProxy Homepage">
 							InvisiProxy
 						</a>
 					</h3>
@@ -75,10 +75,18 @@ export default function Footer() {
 							<a
 								target="_blank"
 								rel="noopener noreferrer"
-								href={route('/github/libcurl-js')}
-								title="A port of libcurl to WebAssembly, for proxying HTTPS requests from the browser with full TLS encryption."
+								href={route('/github/libcurl')}
 							>
 								Libcurl
+							</a>
+						</li>
+						<li>
+							<a
+								target="_blank"
+								rel="noopener noreferrer"
+								href={route('/github/epoxy')}
+							>
+								Epoxy
 							</a>
 						</li>
 					</ul>
@@ -125,16 +133,6 @@ export default function Footer() {
 							<a
 								target="_blank"
 								rel="noopener noreferrer"
-								href={route('/status')}
-								title="TitaniumNetwork Status Page"
-							>
-								Status
-							</a>
-						</li>
-						<li>
-							<a
-								target="_blank"
-								rel="noopener noreferrer"
 								href={route('/github')}
 								title="InvisiProxy GitHub Repository"
 							>
@@ -153,7 +151,7 @@ export default function Footer() {
 						</li>
 						<li>
 							<a
-								href={route('/terms')}
+								href={route('/privacy')}
 								title="Privacy Policy and Terms of Service"
 							>
 								Privacy and Terms of Service
@@ -170,7 +168,7 @@ export default function Footer() {
 					</ul>
 				</div>
 				<div class="footerlist">
-					<a href="#header" title="Back to Top">
+					<a href="#top" title="Back to Top">
 						<span class="sr-only">Back to Top</span>
 						<i
 							class="fas fa-angle-double-up"
@@ -207,19 +205,8 @@ export default function Footer() {
 					<span class="sr-only">Follow Developer on Ko-fi</span>
 					<i class="fas fa-coffee" aria-hidden="true"></i>
 				</a>
-				<a
-					target="_blank"
-					rel="noopener noreferrer"
-					href={route('/titaniumnetwork-documentation')}
-					title="View Documentation on TitaniumNetwork"
-				>
-					<span class="sr-only">
-						View Documentation on TitaniumNetwork
-					</span>
-					<i class="fas fa-file-code" aria-hidden="true"></i>
-				</a>
 			</div>
-			<p class="copyright">InvisiProxy LTS &amp;copy; 2020-2026</p>
+			<p class="copyright">InvisiProxy LTS 2020-2026</p>
 		</>
 	);
 }

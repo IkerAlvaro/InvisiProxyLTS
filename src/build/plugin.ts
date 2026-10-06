@@ -9,6 +9,7 @@ import {
 import { basename, dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { brotliCompressSync, constants, gzipSync } from 'node:zlib';
+import type { Root } from 'postcss';
 import type {
 	EnvironmentOptions,
 	Plugin,
@@ -24,7 +25,7 @@ import {
 	siteDir,
 	stagingDir,
 } from '../constants.ts';
-import { rewriteStylesheet } from '../obfuscation/classes.ts';
+import { rewriteSelector } from '../obfuscation/classes.ts';
 import {
 	browserObfuscationPlugin,
 	obfuscateVendorScript,
@@ -56,12 +57,17 @@ const sourcePath = (path: string) =>
 
 const outputDir = () => (isDevelopment() ? siteDir : stagingDir);
 
-function transformStylesheet(css: string) {
-	css = css.replace(
-		/url\((["']?)(\/assets\/[^)"']+)\1\)/g,
-		(_match, quote, path) => `url(${quote}${route(path)}${quote})`
-	);
-	return isDevelopment() ? css : rewriteStylesheet(css);
+function transformStylesheet(root: Root) {
+	root.walkDecls((declaration) => {
+		declaration.value = declaration.value.replace(
+			/url\((["']?)(\/assets\/[^)"']+)\1\)/g,
+			(_match, quote, path) => `url(${quote}${route(path)}${quote})`
+		);
+	});
+	if (!config.usingSEO)
+		root.walkRules((rule) => {
+			rule.selector = rewriteSelector(rule.selector);
+		});
 }
 
 function rewriteAssetReferences(text: string) {
@@ -224,6 +230,16 @@ export function siteBuildPlugin(): Plugin[] {
 							? 'info'
 							: 'warn',
 					environments: environments(),
+					css: {
+						postcss: {
+							plugins: [
+								{
+									postcssPlugin: 'invisiproxy-styles',
+									Once: transformStylesheet,
+								},
+							],
+						},
+					},
 					builder: { buildApp, sharedConfigBuild: true },
 				};
 			},
@@ -276,7 +292,7 @@ export function siteBuildPlugin(): Plugin[] {
 										readFileSync(file.source, 'utf8')
 									);
 					const source =
-						!development && file.kind === 'vendor-script'
+						!config.usingSEO && file.kind === 'vendor-script'
 							? obfuscateVendorScript(
 									original.toString(),
 									file.target
@@ -313,11 +329,6 @@ export function siteBuildPlugin(): Plugin[] {
 		{
 			name: 'invisiproxy-styles',
 			applyToEnvironment: (environment) => environment.name === 'styles',
-			enforce: 'pre',
-			transform(css, id) {
-				if (id.endsWith('.css') && !id.includes('?'))
-					return { code: transformStylesheet(css), map: null };
-			},
 			generateBundle(_options, bundle) {
 				dropChunks(bundle);
 			},

@@ -41,6 +41,15 @@ const nodes = (
 	...('tagName' in root ? [root] : []),
 	...('childNodes' in root ? root.childNodes.flatMap(nodes) : []),
 ];
+const references = new Map<string, Set<string>>();
+const recordReference = (value: string, from: string) => {
+	if (!value || value.startsWith('#')) return;
+	const target = new URL(value, app.origin + from);
+	if (target.origin !== app.origin) return;
+	const key = target.pathname + target.search;
+	if (!references.has(key)) references.set(key, new Set());
+	references.get(key)!.add(from);
+};
 try {
 	for (const [name, file] of Object.entries(pages)) {
 		const suffix =
@@ -53,6 +62,28 @@ try {
 		);
 		const expected = await readFile(join('views/dist', file));
 		assert.deepEqual(response.rawPayload, expected, name);
+		if (file.endsWith('.css')) {
+			for (const match of decode(expected).matchAll(
+				/url\(\s*["']?([^\s"')]+)["']?\s*\)/g
+			))
+				recordReference(match[1], base + name);
+		}
+		if (file.endsWith('manifest.json')) {
+			const manifest = JSON.parse(decode(expected));
+			for (const icon of manifest.icons || [])
+				recordReference(icon.src, base + name);
+			if (manifest.start_url)
+				recordReference(manifest.start_url, base + name);
+		}
+		if (file.endsWith('sitemap.xml') && config.usingSEO) {
+			for (const match of decode(expected).matchAll(
+				/<loc>([^<]+)<\/loc>/g
+			))
+				recordReference(
+					base + new URL(match[1]).pathname.replace(/^\//, ''),
+					base + name
+				);
+		}
 		if (file.endsWith('.html')) {
 			const html = decode(expected);
 			assert.doesNotMatch(
@@ -62,6 +93,55 @@ try {
 			);
 			assert.ok(html.toLowerCase().startsWith('<!doctype html>'), file);
 			const elements = nodes(parse(html));
+			const ids = new Set(
+				elements.flatMap((node) =>
+					node.attrs
+						.filter((attr) => attr.name === 'id')
+						.map((attr) => attr.value)
+				)
+			);
+			for (const node of elements)
+				for (const attr of node.attrs)
+					if (['href', 'src', 'poster'].includes(attr.name)) {
+						if (
+							attr.name === 'href' &&
+							attr.value.startsWith('#') &&
+							attr.value.length > 1
+						)
+							assert.ok(
+								ids.has(
+									decodeURIComponent(attr.value.slice(1))
+								),
+								`${file}: missing anchor ${attr.value}`
+							);
+						recordReference(attr.value, base + name);
+					}
+			for (const node of elements) {
+				if (node.tagName === 'style') {
+					const css = node.childNodes
+						.map((child) => ('value' in child ? child.value : ''))
+						.join('');
+					for (const match of css.matchAll(
+						/url\(\s*["']?([^\s"')]+)["']?\s*\)/g
+					))
+						recordReference(match[1], base + name);
+				}
+				if (
+					node.tagName === 'meta' &&
+					node.attrs.some((attr) =>
+						[
+							'og:image',
+							'twitter:image',
+							'msapplication-TileImage',
+						].includes(attr.value)
+					)
+				) {
+					const content = node.attrs.find(
+						(attr) => attr.name === 'content'
+					);
+					if (content) recordReference(content.value, base + name);
+				}
+			}
 			assert.ok(
 				elements.some(
 					(node) => node.tagName === 'title' && node.childNodes.length
@@ -75,6 +155,30 @@ try {
 			assert.ok(!html.includes('PRIVATE_TEST_MARKER'), file);
 			assert.ok(!html.includes('private/test-links.txt'), file);
 		}
+	}
+	for (const [target, sources] of references) {
+		assert.ok(
+			target.startsWith(base),
+			`${target} escapes the configured base path (${[...sources].join(', ')})`
+		);
+		const pathname = new URL(target, app.origin).pathname;
+		const relative = pathname.slice(base.length).replace(/\.ico$/, '');
+		const page = pages[relative];
+		const request =
+			config.disguiseFiles && page?.endsWith('.html') && pathname !== base
+				? pathname + '.ico'
+				: target;
+		const response = await app.inject(request);
+		if (/\.css$/.test(pathname)) {
+			for (const match of response.body.matchAll(
+				/url\(\s*["']?([^\s"')]+)["']?\s*\)/g
+			))
+				recordReference(match[1], pathname);
+		}
+		assert.ok(
+			[200, 302].includes(response.statusCode),
+			`${target}: HTTP ${response.statusCode} (linked from ${[...sources].join(', ')})`
+		);
 	}
 	const root = await app.inject(base);
 	assert.equal(root.statusCode, 200, 'root');
@@ -218,7 +322,7 @@ try {
 	)) {
 		const built = await readFile(join('views/dist', file.target));
 		const original = await readFile(file.source);
-		if (file.kind === 'vendor-script') {
+		if (file.kind === 'vendor-script' && !config.usingSEO) {
 			assert.notDeepEqual(
 				built,
 				original,
@@ -303,7 +407,7 @@ try {
 	);
 	assert.equal((await app.inject(`${base}favicon.ico`)).rawPayload.length, 0);
 	console.log(
-		'Built documents, routes, redirects, assets, service workers, history status and private links passed.'
+		`Built documents, ${references.size} internal link/asset references, routes, redirects, service workers, history status and private links passed.`
 	);
 } finally {
 	await app.close();

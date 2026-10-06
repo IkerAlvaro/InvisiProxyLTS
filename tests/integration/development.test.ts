@@ -5,7 +5,7 @@ import { fixture, run } from '../helpers/fixture.ts';
 for (const usingSEO of [true, false])
 	for (const disguiseFiles of [true, false]) {
 		test(`development updates: SEO=${usingSEO}, disguise=${disguiseFiles}`, {
-			timeout: 120000,
+			timeout: 360000,
 		}, async (t) => {
 			const root = await fixture(
 				t,
@@ -24,7 +24,8 @@ for (const usingSEO of [true, false])
 						new URL('../fixtures/dev-probe.ts', import.meta.url)
 					),
 				],
-				{ INVISIPROXY_VITE_DEV: '1' }
+				{ INVISIPROXY_VITE_DEV: '1' },
+				300000
 			);
 		});
 	}

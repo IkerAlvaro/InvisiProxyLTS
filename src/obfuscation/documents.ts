@@ -1,11 +1,11 @@
 import { minify } from 'html-minifier-terser';
 import { parse, type DefaultTreeAdapterTypes } from 'parse5';
-import { isDevelopment } from '../constants.ts';
+import { config } from '../config.ts';
 import { classNames, rewriteClasses, rewriteStylesheet } from './classes.ts';
 import { obfuscateScript, stripObfuscatedMarker } from './scripts.ts';
 
 export async function obfuscateDocument(html: string, name: string) {
-	if (isDevelopment()) return html;
+	if (config.usingSEO) return html;
 	const edits: { start: number; end: number; source: string }[] = [];
 	const names = classNames();
 	function visit(node: DefaultTreeAdapterTypes.Node) {

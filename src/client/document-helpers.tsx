@@ -3,6 +3,7 @@ import { renderToString, ssr } from 'solid-js/web';
 import { values, randomItem, inlineHtml, route } from '../site.ts';
 export {
 	values,
+	sites,
 	route,
 	ifSEO,
 	ifDisguise,

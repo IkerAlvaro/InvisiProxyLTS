@@ -66,7 +66,7 @@ export default function ScramjetError() {
 								<a
 									href={route('/github/scramjet')}
 									target="_blank"
-									rel="noopener"
+									rel="noopener noreferrer"
 								>
 									Scramjet GitHub.
 								</a>
@@ -74,10 +74,6 @@ export default function ScramjetError() {
 							<li>
 								Try a different proxy engine via the settings
 								panel.
-							</li>
-							<li>
-								If the issue persists be sure to mention this in
-								the TitaniumNetwork Discord.
 							</li>
 						</ul>
 					</div>

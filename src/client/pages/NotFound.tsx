@@ -52,7 +52,7 @@ export default function NotFound() {
 export function Head() {
 	return (
 		<>
-			<base href="/" />
+			<base href={route('/')} />
 			<title>InvisiProxy LTS | Error</title>
 			<meta itemprop="http-status" content="404" />
 			<PageDescription />

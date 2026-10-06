@@ -8,7 +8,6 @@ import HeadContent from '../components/HeadContent.tsx';
 import ProxyPreloads from '../components/ProxyPreloads.tsx';
 import AntiExfil from '../components/AntiExfil.tsx';
 import Settings from '../components/Settings.tsx';
-import MirrorLinks from '../components/MirrorLinks.tsx';
 
 export default function ProxyFrame() {
 	return (
@@ -46,7 +45,6 @@ export default function ProxyFrame() {
 					/>
 					<ul id="autocomplete"></ul>
 				</div>
-				<MirrorLinks />
 				<div title="Settings" class="dropdown-parent">
 					<button
 						class="link-button"

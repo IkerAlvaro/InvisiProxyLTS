@@ -43,9 +43,9 @@ export function route(path: string, conditional?: 'inline'): string {
 			ancestor
 				? values.aliases[name] || name
 				: values.aliases[`files/${name}`] ||
-					values.cacheBust[name] ||
-					values.aliases[name] ||
-					name
+				values.cacheBust[name] ||
+				values.aliases[name] ||
+				name
 		)
 		.replace(
 			/[^/]+(?=\/)/g,
@@ -96,3 +96,25 @@ export function inlineHtml(html: string): string {
 		}
 	);
 }
+
+export const sites = Object.freeze([
+	{ name: 'Discord', url: 'https://discord.com/app' },
+	{ name: 'ChatGPT', url: 'https://chat.openai.com/chat' },
+	{ name: 'Youtube', url: 'https://youtube.com' },
+	{ name: 'Invidious', url: 'https://yt.chocolatemoo53.com' },
+	{ name: 'GitHub', url: 'https://github.com' },
+	{ name: 'FMHY', url: 'https://fmhy.net' },
+	{ name: 'Wikipedia', url: 'https://www.wikipedia.com' },
+	{ name: 'Twitter', url: 'https://twitter.com' },
+	{ name: 'Instagram', url: 'https://www.instagram.com' },
+	{ name: 'Reddit', url: 'https://www.reddit.com' },
+	{ name: 'Twitch', url: 'https://www.twitch.tv' },
+	{ name: 'TikTok', url: 'https://www.tiktok.com' },
+	{ name: 'Animetsu', url: 'https://animetsu.site' },
+	{ name: 'Spotify', url: 'https://open.spotify.com' },
+]);
+
+export const partners = Object.freeze([
+	{ name: 'The Freedom Project', url: 'https://nullatenus.com', newtab: true },
+	{ name: 'Truffled', url: 'https://truffled.lol', newtab: false },
+]);

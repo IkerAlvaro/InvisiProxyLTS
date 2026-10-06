@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 import postcss from 'postcss';
 import selectorParser from 'postcss-selector-parser';
 import ts from 'typescript';
+import { config } from '../config.ts';
 import { projectUrl } from '../constants.ts';
 import {
 	generatedNames,
@@ -15,6 +16,7 @@ const vendorClass =
 	/^(?:fa(?:[brsld])?(?:-|$)|aos(?:-|$)|tippy-(?:box|content|arrow|backdrop)|eruda(?:-|$))/;
 
 export function classNames(): Record<string, string> {
+	if (config.usingSEO) return {};
 	const state = obfuscationState();
 	if (Object.keys(state.classes).length) return state.classes;
 	const names = new Set<string>();
@@ -23,7 +25,9 @@ export function classNames(): Record<string, string> {
 			if (name && !vendorClass.test(name)) names.add(name);
 	};
 	const cssRoot = new URL('views/assets/css/', projectUrl);
-	for (const file of existsSync(cssRoot) ? readdirSync(cssRoot) : []) {
+	for (const file of existsSync(cssRoot)
+		? readdirSync(cssRoot, { recursive: true, encoding: 'utf8' })
+		: []) {
 		if (!file.endsWith('.css')) continue;
 		postcss
 			.parse(readFileSync(new URL(file, cssRoot), 'utf8'))

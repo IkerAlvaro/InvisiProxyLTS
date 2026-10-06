@@ -13,6 +13,8 @@ import AntiExfil from '../components/AntiExfil.tsx';
 import Header from '../components/Header.tsx';
 import ProxySettings from '../components/ProxySettings.tsx';
 import Footer from '../components/Footer.tsx';
+import { partners } from '../../site.ts';
+import App from '../components/AppButton.tsx';
 
 export default function Partners() {
 	return (
@@ -38,24 +40,13 @@ export default function Partners() {
 						</div>
 						<div class="proxy-form text-center">
 							<div class="glist">
-								<a
-									href="https://nullatenus.com"
-									target="_blank"
-									rel="noopener noreferrer"
-									id="pr-fe"
-									data-tippy-content="Anti-Censorship Proxy [Hard Fork]: A hard fork of InvisiProxy LTS that focuses purely on anti-censorship functionality and minimal design."
-									class="fancybutton glowbutton tippy-button pr-go2"
-								>
-									The Freedom Project
-								</a>
-								<button
-									type="button"
-									id="pr-trl"
-									data-tippy-content="Web Ports, Proxy, Games [Third Party]: The best unblocked games site available with many web ports and a huge collection."
-									class="fancybutton glowbutton tippy-button pr-go2 link-button"
-								>
-									Truffled
-								</button>
+								{partners.map((partner) => (
+									<App
+										url={partner.url}
+										name={partner.name}
+										newtab={partner.newtab}
+									/>
+								))}
 							</div>
 							<ProxySettings />
 						</div>

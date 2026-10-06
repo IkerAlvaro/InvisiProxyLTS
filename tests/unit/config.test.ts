@@ -20,7 +20,7 @@ import { aliasRoutes, getAltPrefix, getPathAliases } from './src/obfuscation/pat
 import { externalPages as links } from './src/server/links.ts';
 const { pages, links: externalPages } = aliasRoutes({ '': 'index.html', links: 'index.html', 'robots.txt': 'robots.txt' }, links);
 assert.equal(serverUrl.pathname, '/school/');
-assert.equal(serverPort, 18080);
+assert.equal(serverPort, Number(process.env.PORT));
 assert.equal(pages[''], 'index.html');
 const aliases = getPathAliases();
 assert.equal(pages[aliases.links || 'links'], 'index.html');

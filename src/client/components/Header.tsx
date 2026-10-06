@@ -34,15 +34,6 @@ export default function Header() {
 					<li>
 						<a
 							class="line"
-							href={route('/youtube')}
-							title="YouTube - Access YouTube content through our proxy service"
-						>
-							YouTube
-						</a>
-					</li>
-					<li>
-						<a
-							class="line"
 							href={route('/apps')}
 							title="Applications - Browse a selection of useful applications"
 						>
@@ -159,9 +150,6 @@ export default function Header() {
 						<a href={route('/partners')}>Partners</a>
 					</li>
 					<li>
-						<a href={route('/youtube')}>YouTube</a>
-					</li>
-					<li>
 						<a href={route('/apps')}>Applications</a>
 					</li>
 					<li>
@@ -174,7 +162,7 @@ export default function Header() {
 						<a href={route('/credits')}>Credits</a>
 					</li>
 					<li>
-						<a href={route('/terms')}>TOS</a>
+						<a href={route('/privacy')}>TOS</a>
 					</li>
 				</ul>
 			</div>

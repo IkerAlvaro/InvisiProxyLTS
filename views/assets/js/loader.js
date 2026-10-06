@@ -194,6 +194,17 @@ import { values } from 'build:invisiproxy';
                               attrValue.indexOf('#') === -1
                             )
                               elementCopy.addEventListener('click', (event) => {
+                                const target = elementCopy.getAttribute('target');
+                                if (
+                                  event.defaultPrevented ||
+                                  event.button !== 0 ||
+                                  event.ctrlKey ||
+                                  event.metaKey ||
+                                  event.shiftKey ||
+                                  event.altKey ||
+                                  (target && target.toLowerCase() !== '_self') ||
+                                  elementCopy.hasAttribute('download')
+                                ) return;
                                 event.preventDefault();
                                 loadPage(new URL(attrValue, origin))();
                               });

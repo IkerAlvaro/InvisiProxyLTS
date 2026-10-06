@@ -156,7 +156,9 @@ function applyResponseHooks(
 		}
 		return (writeHead as (...args: unknown[]) => ServerResponse).call(
 			this,
-			hide ? 404 : statusCode,
+			hide && !(statusCode >= 300 && statusCode < 400 && this.hasHeader('Location'))
+				? 404
+				: statusCode,
 			...args
 		);
 	} as typeof res.writeHead;

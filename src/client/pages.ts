@@ -20,7 +20,6 @@ import Privacy, { Head as PrivacyHead } from './pages/Privacy.tsx';
 import Partners, { Head as PartnersHead } from './pages/Partners.tsx';
 import Icons, { Head as IconsHead } from './pages/Icons.tsx';
 import Scramjet, { Head as ScramjetHead } from './pages/Scramjet.tsx';
-import YouTube, { Head as YouTubeHead } from './pages/YouTube.tsx';
 import Applications, {
 	Head as ApplicationsHead,
 } from './pages/Applications.tsx';
@@ -95,11 +94,6 @@ export const pageDefinitions = {
 		route: ['browsing', 'scramjet'],
 		Page: Scramjet,
 		Head: ScramjetHead,
-	},
-	'pages/proxnav/preset/youtube.html': {
-		route: 'youtube',
-		Page: YouTube,
-		Head: YouTubeHead,
 	},
 	'pages/proxnav/preset/applications.html': {
 		route: 'apps',

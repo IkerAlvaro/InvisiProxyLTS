@@ -23,15 +23,6 @@ export default function Documentation() {
 				options below? Check out Railway or look into cheap, paid VPS
 				hosting solutions.
 			</p>
-			<p>
-				<strong>
-					Be sure to join TitaniumNetwork's Discord for more official
-					site links:
-				</strong>
-				<a href={route('/titaniumnetwork-discord')}>
-					https://discord.gg/unblock
-				</a>
-			</p>
 			<br />
 			<h3>GitHub Codespaces</h3>
 			<details>
@@ -41,7 +32,13 @@ export default function Documentation() {
 				<br />
 				{'\n  - '}
 				Head to the official{' '}
-				<a href={route('/codespaces')}>Codespaces</a>
+				<a
+					href={route('/codespaces')}
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					Codespaces
+				</a>
 				{' website (ensure you\n  have a GitHub account already made)'}
 				<br />
 				{'\n  - Select '}
@@ -119,8 +116,12 @@ pnpm dev`}</code>
 			<h4>Tor/Onion Routing Setup</h4>
 			<p>
 				Simply host Tor using this guide:{' '}
-				<a href={route('/tr')}>
-					https://tb-manual.torproject.org/installation/
+				<a
+					href={route('/tor-project')}
+					target="_blank"
+					rel="noopener noreferrer"
+				>
+					https://support.torproject.org/little-t-tor/getting-started/installing/
 				</a>
 			</p>
 			<p>

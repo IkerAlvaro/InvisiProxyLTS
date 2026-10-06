@@ -23,7 +23,9 @@ const { pages } = (
 const { classNames } = await load<
 	typeof import('../../src/obfuscation/classes.ts')
 >('src/obfuscation/classes.ts');
-const classes = classNames();
+const classes = new Proxy(classNames(), {
+	get: (names, key: string) => names[key] || key,
+});
 const { getAltPrefix } = await load<
 	typeof import('../../src/obfuscation/paths.ts')
 >('src/obfuscation/paths.ts');
@@ -125,9 +127,10 @@ try {
 		`${serverUrl.pathname}api/link`
 	);
 	const buttonClasses = (await button.getAttribute('class')) ?? '';
-	assert.ok(buttonClasses.includes(classes.fancybutton));
-	assert.ok(buttonClasses.includes(classes.glowbutton));
-	assert.doesNotMatch(buttonClasses, /fancybutton|glowbutton/);
+	assert.ok(buttonClasses.includes(classes.fancybutton || 'fancybutton'));
+	assert.ok(buttonClasses.includes(classes.glowbutton || 'glowbutton'));
+	if (!config.usingSEO)
+		assert.doesNotMatch(buttonClasses, /fancybutton|glowbutton/);
 	assert.equal(
 		await button.evaluate((el) => getComputedStyle(el).borderRadius),
 		'8px'
@@ -494,9 +497,9 @@ try {
 		);
 		await page.unroute('**/loading-frame-test.js');
 	}
-	await page.goto(route('pages/proxnav/preset/youtube.html'));
-	await page.locator('#pr-yt').waitFor();
-	await page.locator('#pr-yt').click();
+	await page.goto(route('pages/proxnav/preset/applications.html'));
+	await page.getByRole('button', { name: /^youtube$/i }).waitFor();
+	await page.getByRole('button', { name: /^youtube$/i }).click();
 	await page.waitForURL(
 		(url) => url.pathname === new URL(route('pages/frame.html')).pathname
 	);

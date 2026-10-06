@@ -29,20 +29,30 @@ export default function ProxySettings() {
 							class="useonion"
 						/>
 					</div>
-					<div class="settings-card">
-						<h3 class="cseltitle">Privacy</h3>
-						<SettingToggle
-							label="Hide ads"
-							description="Block ads while browsing."
-							class="hideads"
-							checked
-						/>
-						<SettingToggle
-							label="Hide history"
-							description="Reduce saved history. May affect some sites."
-							class="history-toggle"
-							checked
-						/>
+					<div class="proxy-settings-grid-right">
+						<div class="settings-card">
+							<h3 class="cseltitle">Privacy</h3>
+							<SettingToggle
+								label="Hide ads"
+								description="Block ads while browsing."
+								class="hideads"
+								checked
+							/>
+							<SettingToggle
+								label="Hide history"
+								description="Reduce saved history. May affect some sites."
+								class="history-toggle"
+								checked
+							/>
+						</div>
+						<button
+							class="settings-card link-button settings-toggle"
+							type="button"
+							aria-label="View more settings"
+						>
+							<span class="cseltitle">View more settings</span>
+							<i class="fas fa-cog" aria-hidden="true"></i>
+						</button>
 					</div>
 				</div>
 			</details>

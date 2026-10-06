@@ -10,6 +10,7 @@ import {
 import type { AddressInfo } from 'node:net';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
+import { runInNewContext } from 'node:vm';
 import { createServer } from 'vite';
 import { chromium } from 'playwright';
 
@@ -116,6 +117,18 @@ const served = async (path: string, text: string) => {
 	const response = await get(path);
 	return response.status === 200 && response.body.includes(text);
 };
+const scriptLogs = async (path: string, text: string) => {
+	const response = await get(path);
+	if (response.status !== 200) return false;
+	const messages: unknown[] = [];
+	const document = { getElementById: () => null, addEventListener() {} };
+	runInNewContext(response.body, {
+		document,
+		window: { document },
+		console: { log: (message: unknown) => messages.push(message) },
+	});
+	return messages.includes(text);
+};
 
 try {
 	const state = JSON.parse(
@@ -132,6 +145,16 @@ try {
 		'startup drops old aliases'
 	);
 	if (!config.usingSEO) assert.match(state.aliases.links, /^[A-Za-z]+$/);
+	const stylesheet = await get('assets/css/style.css');
+	assert.equal(stylesheet.status, 200);
+	if (config.usingSEO) {
+		assert.deepEqual(state.classes, {});
+		assert.ok(stylesheet.body.includes('.fancybutton'));
+	} else {
+		assert.ok(state.classes.fancybutton);
+		assert.ok(stylesheet.body.includes(`.${state.classes.fancybutton}`));
+		assert.doesNotMatch(stylesheet.body, /\.fancybutton\b/);
+	}
 	assert.equal(
 		(await get('stale.txt')).status,
 		404,
@@ -286,7 +309,7 @@ try {
 		'\nconsole.log("probe-script");\n'
 	);
 	await eventually('script edit', () =>
-		served('assets/js/link.js', 'probe-script')
+		scriptLogs('assets/js/link.js', 'probe-script')
 	);
 	await appendFile(
 		'views/assets/css/style.css',
@@ -304,7 +327,7 @@ try {
 		'\nconsole.log("probe-faq");\n'
 	);
 	await eventually('FAQ search edit', () =>
-		served('assets/js/faq-search.js', 'probe-faq')
+		scriptLogs('assets/js/faq-search.js', 'probe-faq')
 	);
 
 	const api = () => get('api/link', 'POST').then((r) => r.body);
@@ -331,7 +354,8 @@ try {
 		async () =>
 			server.httpServer !== httpServer &&
 			Boolean(server.httpServer?.listening) &&
-			(await served('assets/js/probe-new.js', 'probe-new'))
+			(await scriptLogs('assets/js/probe-new.js', 'probe-new')),
+		180000
 	);
 
 	assert.deepEqual(

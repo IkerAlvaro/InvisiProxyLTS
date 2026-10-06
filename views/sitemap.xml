@@ -18,12 +18,6 @@
         <changefreq>weekly</changefreq>
     </url>
     <url>
-        <loc>https://invisiproxy.com/youtube</loc>
-        <lastmod>2026-08-30T00:00:00+00:00</lastmod>
-        <priority>0.85</priority>
-        <changefreq>monthly</changefreq>
-    </url>
-    <url>
         <loc>https://invisiproxy.com/apps</loc>
         <lastmod>2026-08-30T00:00:00+00:00</lastmod>
         <priority>0.80</priority>
@@ -54,22 +48,10 @@
         <changefreq>monthly</changefreq>
     </url>
     <url>
-        <loc>https://invisiproxy.com/terms</loc>
+        <loc>https://invisiproxy.com/privacy</loc>
         <lastmod>2026-08-30T00:00:00+00:00</lastmod>
         <priority>0.55</priority>
         <changefreq>monthly</changefreq>
-    </url>
-    <url>
-        <loc>https://invisiproxy.com/flash</loc>
-        <lastmod>2026-08-30T00:00:00+00:00</lastmod>
-        <priority>0.40</priority>
-        <changefreq>yearly</changefreq>
-    </url>
-    <url>
-        <loc>https://invisiproxy.com/webretro</loc>
-        <lastmod>2026-08-30T00:00:00+00:00</lastmod>
-        <priority>0.40</priority>
-        <changefreq>yearly</changefreq>
     </url>
 
 </urlset>

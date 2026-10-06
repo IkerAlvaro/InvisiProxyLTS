@@ -38,6 +38,7 @@ export function siteFiles(): SiteFile[] {
 		(!config.usingSEO && getPathAliases()[`files/${name}`]) || name;
 
 	const collect = (dir: string, outDir: string, fromViews: boolean) => {
+		if (fromViews && outDir === 'assets/css/partials/') return;
 		for (const file of readdirSync(dir)) {
 			if (
 				(fromViews && ignoredDirs.includes(file)) ||

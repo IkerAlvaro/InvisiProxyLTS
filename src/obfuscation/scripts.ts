@@ -1,7 +1,8 @@
 import { randomBytes } from 'node:crypto';
 import { Indraughts as transformSources } from 'merp-obfuscator';
 import type { Plugin } from 'vite';
-import { isDevelopment, obfuscatedMarker as marker } from '../constants.ts';
+import { config } from '../config.ts';
+import { obfuscatedMarker as marker } from '../constants.ts';
 import { rewriteClassReferences } from './classes.ts';
 import { obfuscationState } from './state.ts';
 
@@ -16,6 +17,7 @@ function transformScript(
 	name: string,
 	rewriteClasses: boolean
 ): string {
+	if (config.usingSEO) return source;
 	if (!source.trim() || source.trimStart().startsWith(marker)) return source;
 	const result = transformSources(
 		{
@@ -47,7 +49,7 @@ export function browserObfuscationPlugin(): Plugin {
 		apply: 'build',
 		enforce: 'post',
 		generateBundle(_options, bundle) {
-			if (isDevelopment()) return;
+			if (config.usingSEO) return;
 			for (const output of Object.values(bundle)) {
 				if (output.type === 'chunk') {
 					output.code = obfuscateScript(output.code, output.fileName);

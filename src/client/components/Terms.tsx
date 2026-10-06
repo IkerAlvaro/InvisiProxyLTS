@@ -154,10 +154,6 @@ export default function Terms() {
 					}
 					d9tcv6vgx@mozmail.com <br />
 					<br />
-					Discord
-					{': '}
-					https://discord.gg/unblock
-					<br />
 				</p>
 			</div>
 		</div>

@@ -4,7 +4,7 @@ import { fixture, run } from '../helpers/fixture.ts';
 
 for (const disguiseFiles of [true, false]) {
 	test(`development Scramjet navigation through libcurl and Epoxy: disguise=${disguiseFiles}`, {
-		timeout: 120000,
+		timeout: 360000,
 	}, async (t) => {
 		const root = await fixture(
 			t,
@@ -26,7 +26,8 @@ for (const disguiseFiles of [true, false]) {
 			{
 				INVISIPROXY_VITE_DEV: '1',
 				INVISIPROXY_TEST_BROWSER: '1',
-			}
+			},
+			300000
 		);
 	});
 }

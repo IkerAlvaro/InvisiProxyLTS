@@ -151,9 +151,8 @@ if (document.getElementById('csel')) {
       (
         document.getElementById(selector) || document.querySelector(selector)
       ).addEventListener(...args),
-    focusElement = document
-      .getElementsByClassName('dropdown-settings')[0]
-      .parentElement.querySelector("button.link-button");
+    settingsMenu = document.getElementsByClassName('dropdown-settings')[0],
+    focusElement = settingsMenu.parentElement.querySelector("button.link-button");
 
   // TODO: Properly comment this code.
   const attachClassEventListener = (classSelector, ...args) => {
@@ -355,9 +354,28 @@ if (document.getElementById('csel')) {
     }
   });
 
-  attachEventListener('.close-settings-btn', 'click', () => {
-    focusElement.blur();
-    document.activeElement.blur();
+  document.querySelectorAll('.settings-toggle').forEach((button) => {
+    button.addEventListener('click', () => focusElement.focus());
+  });
+
+  const closeSettings = () => {
+    if (settingsMenu.parentElement.contains(document.activeElement)) {
+      document.activeElement.blur();
+    }
+  };
+
+  attachEventListener('.close-settings-btn', 'click', closeSettings);
+
+  settingsMenu.addEventListener('click', (event) => {
+    if (!event.target.closest('.settings-content')) {
+      closeSettings();
+    }
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (event.key === 'Escape') {
+      closeSettings();
+    }
   });
 
   // Allow users to toggle ads with the UI.
