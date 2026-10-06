@@ -118,3 +118,88 @@ export const partners = Object.freeze([
 	{ name: 'The Freedom Project', url: 'https://nullatenus.com', newtab: true },
 	{ name: 'Truffled', url: 'https://truffled.lol', newtab: false },
 ]);
+
+export const credits = Object.freeze([
+	{
+		title: 'Main Developers',
+		people: [
+			{
+				name: 'Quite A Fancy Emerald',
+				contributions: 'Creator and Owner',
+				url: 'https://github.com/QuiteAFancyEmerald',
+				contact: '@quiteafancyemerald',
+			},
+			{
+				name: "YOCTDONALD'S",
+				contributions: 'Co-Owner, Main Contributor',
+				url: 'https://github.com/yoct1',
+				contact: '@yoct',
+			},
+			{
+				name: 'OlyB/BinBashBanana',
+				contributions: 'Co-Owner, Main Contributor',
+				url: 'https://github.com/BinBashBanana',
+				contact: '@olyb / @binbashbanana',
+			},
+			{
+				name: 'Sylvia',
+				contributions: 'Co-Owner, Main Contributor, English to French',
+				url: 'https://sylvieon.dev',
+				contact: '@sylvieisnton',
+			},
+		],
+	},
+	{
+		title: 'Contributors',
+		people: [
+			{
+				name: 'MUATEX',
+				contributions: 'Designer for Logo/Branding',
+				url: 'https://www.muatex.com',
+				contact: '@muatex',
+			},
+			{
+				name: 'Kinglalu',
+				contributions: 'Games Page, Developer',
+				url: 'https://github.com/kinglalu',
+				contact: '@kinglalu',
+			},
+			{
+				name: 'MotorTruck1221',
+				contributions:
+					'Massive Contributor, Fastify Rewrite, Mercury Workshop, Developer',
+				url: 'https://github.com/MotorTruck1221',
+				contact: '@motortruck1221',
+			},
+			{
+				name: 'percs',
+				contributions: 'Scramjet, Wisp, Mercury Workshop, Developer',
+				url: 'https://github.com/percslol',
+				contact: '@percslol',
+			},
+			{
+				name: 'velzie',
+				contributions: 'Scramjet, Mercury Workshop, Developer',
+				url: 'https://github.com/velzie',
+				contact: '@velzie',
+			},
+			{
+				name: 'b4kt',
+				contributions: 'The Freedom Project (Former Hard Fork)',
+				url: 'https://discord.gg/jMm65ktMCz',
+				contact: 'The Freedom Project Discord',
+			},
+		],
+	},
+	{
+		title: 'Translators',
+		people: [
+			{
+				name: 'Manjit',
+				contributions: 'English to Italian',
+				url: 'https://manjit.dev',
+				contact: '@manjit',
+			},
+		],
+	},
+]);

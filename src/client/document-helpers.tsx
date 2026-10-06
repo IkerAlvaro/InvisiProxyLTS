@@ -4,6 +4,7 @@ import { values, randomItem, inlineHtml, route } from '../site.ts';
 export {
 	values,
 	sites,
+	credits,
 	route,
 	ifSEO,
 	ifDisguise,
