@@ -4,14 +4,19 @@ import { mkdtemp, writeFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { pathToFileURL } from 'node:url';
-import Fastify from 'fastify';
-import { registerLinkDispenser } from '../../src/link-dispenser.ts';
+import { createLinkDispenser } from '../../src/server/link-dispenser.ts';
+import { serve, testClientIp } from '../helpers/http.ts';
 
 async function dispenser(t: TestContext, contents?: string) {
 	const dir = await mkdtemp(join(tmpdir(), 'invisiproxy-links-'));
 	const file = pathToFileURL(join(dir, 'links.txt'));
-	const app = Fastify();
-	registerLinkDispenser(app, '/nested/api/link', file);
+	const dispense = createLinkDispenser(file, testClientIp);
+	const app = await serve((req, res) => {
+		if (req.method === 'POST' && req.url === '/nested/api/link')
+			return dispense(req, res);
+		res.statusCode = 404;
+		res.end();
+	});
 	t.after(async () => {
 		await app.close();
 		await rm(dir, { recursive: true, force: true });

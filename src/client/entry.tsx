@@ -1,9 +1,22 @@
 import { renderToString } from 'solid-js/web';
-import { setSiteValues, type SiteValues } from '../site-values.ts';
+import { setSiteValues, type SiteValues } from '../site.ts';
 import Bookmarks from './components/Bookmarks.tsx';
 import Document from './Document.tsx';
 import { pageDefinitions } from './pages.ts';
-import { maskDocument } from './mask-document.ts';
+import type { PageDefinition } from './types.ts';
+import { maskDocument } from '../obfuscation/mask-document.ts';
+
+export function pageRoutes(): Record<string, string> {
+	const definitions: Record<string, PageDefinition> = pageDefinitions;
+	return Object.fromEntries(
+		Object.entries(definitions).flatMap(([path, { route }]) =>
+			(route === undefined ? [] : [route].flat()).map((name) => [
+				name,
+				path,
+			])
+		)
+	);
+}
 
 export function renderDocuments(context: SiteValues) {
 	setSiteValues(context);

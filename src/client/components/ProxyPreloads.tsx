@@ -3,7 +3,6 @@ import { route } from '../document-helpers.tsx';
 export default function ProxyPreloads() {
 	return (
 		<>
-			<link rel="modulepreload" href={route('/libcurl/index.mjs')} />
 			<link
 				rel="preload"
 				as="script"

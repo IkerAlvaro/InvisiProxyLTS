@@ -1,33 +1,41 @@
-import { Cooking, Inline, route } from '../document-helpers.tsx';
+import { Cooking, Inline, route, sites } from '../document-helpers.tsx';
+import {
+	ParticlesScript,
+	TooltipScripts,
+	ScramjetScripts,
+	RegisterServiceWorkerScript,
+	PageScripts,
+	PageDescription,
+} from '../components/HeadScripts.tsx';
+import HeadContent from '../components/HeadContent.tsx';
+import ProxyPreloads from '../components/ProxyPreloads.tsx';
 import AntiExfil from '../components/AntiExfil.tsx';
 import Header from '../components/Header.tsx';
 import ProxySettings from '../components/ProxySettings.tsx';
 import Footer from '../components/Footer.tsx';
+import App from '../components/AppButton.tsx';
 
 export default function Applications() {
 	return (
 		<>
 			<Cooking />
 			<AntiExfil />
-			<div id={'header'} class={'fullwidth'}>
+			<div id="header" class="fullwidth">
 				<Header />
 			</div>
-			<div id={'background'} class={'fullwidth'}></div>
+			<div id="background" class="fullwidth"></div>
 			<Cooking />
-			<div data-aos={'fade-right'} class={'hero-grid-container'}>
-				<div class={'box-hero'}>
-					<div class={'hero-content'}>
-						<div class={'proxy-header text-center'}>
-							<h1 class={'bigtitle'}>Applications</h1>
+			<div data-aos="fade-right" class="hero-grid-container">
+				<div class="box-hero">
+					<div class="hero-content">
+						<div class="proxy-header text-center">
+							<h1 class="bigtitle">Applications</h1>
 							<p>
-								{'\n              '}
-								Select an exclusively supported website that is
-								proxied. Be sure to avoid logging in with
-								primary accounts, as this is a public proxy
-								service.
+								Select a website below to open it through the
+								proxy. Be sure to avoid logging in with primary
+								accounts, as this is a public proxy service.
 								<br />
 								If you are self-hosting however feel free.
-								{'\n            '}
 							</p>
 							<br />
 							<br />
@@ -35,96 +43,17 @@ export default function Applications() {
 							have any issues. For GeForce Now disable ads also.
 							<br />
 							{'View the\n            '}
-							<a href={route('/questions')}>{'FAQ'}</a> page if
-							you have any issues with the proxy.
-							{'\n          '}
+							<a href={route('/questions')}>FAQ</a> page if you
+							have any issues with the proxy.
 						</div>
-						<div class={'proxy-form text-center'}>
-							<div class={'glist'}>
-								<button
-									type="button"
-									id={'pr-cg'}
-									class="fancybutton glowbutton pr-go2 link-button"
-								>
-									ChatGPT
-								</button>
-								<button
-									type="button"
-									id={'pr-fm'}
-									class="fancybutton glowbutton pr-go2 link-button"
-								>
-									FMHY
-								</button>
-								<button
-									type="button"
-									id={'pr-ha'}
-									class="fancybutton glowbutton pr-go2 link-button"
-								>
-									Animetsu
-								</button>
-								<button
-									type="button"
-									id={'pr-dc'}
-									class="fancybutton glowbutton pr-go2 link-button"
-								>
-									Discord
-								</button>
-								<button
-									type="button"
-									id={'pr-gf'}
-									class="fancybutton glowbutton pr-go2 link-button"
-								>
-									GeForce NOW
-								</button>
-								<button
-									type="button"
-									id={'pr-sp'}
-									class="fancybutton glowbutton pr-go2 link-button"
-								>
-									Spotify
-								</button>
-								<button
-									type="button"
-									id={'pr-tc'}
-									class="fancybutton glowbutton pr-go2 link-button"
-								>
-									Twitch
-								</button>
-								<button
-									type="button"
-									id={'pr-tt'}
-									class="fancybutton glowbutton pr-go2 link-button"
-								>
-									TikTok
-								</button>
-								<button
-									type="button"
-									id={'pr-tw'}
-									class="fancybutton glowbutton pr-go2 link-button"
-								>
-									Twitter
-								</button>
-								<button
-									type="button"
-									id={'pr-ig'}
-									class="fancybutton glowbutton pr-go2 link-button"
-								>
-									Instagram
-								</button>
-								<button
-									type="button"
-									id={'pr-rt'}
-									class="fancybutton glowbutton pr-go2 link-button"
-								>
-									Reddit
-								</button>
-								<button
-									type="button"
-									id={'pr-wa'}
-									class="fancybutton glowbutton pr-go2 link-button"
-								>
-									Wikipedia
-								</button>
+						<div class="proxy-form text-center">
+							<div class="glist">
+								{sites.map((site) => (
+									<App
+										url={site.url}
+										name={site.name}
+									/>
+								))}
 							</div>
 							<ProxySettings />
 						</div>
@@ -132,12 +61,28 @@ export default function Applications() {
 				</div>
 			</div>
 			<Cooking />
-			<div id={'footer'} class={'fullwidth'}>
+			<div id="footer" class="fullwidth">
 				<Footer />
 			</div>
 			<Inline>
 				<script src={route('assets/js/card.js', 'inline')} />
 			</Inline>
+		</>
+	);
+}
+
+export function Head() {
+	return (
+		<>
+			<title>InvisiProxy LTS | Applications</title>
+			<PageDescription />
+			<ProxyPreloads />
+			<HeadContent />
+			<ScramjetScripts />
+			<RegisterServiceWorkerScript />
+			<ParticlesScript />
+			<TooltipScripts />
+			<PageScripts />
 		</>
 	);
 }

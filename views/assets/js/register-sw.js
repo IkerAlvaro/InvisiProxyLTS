@@ -1,4 +1,5 @@
 import { values, route } from 'build:invisiproxy';
+import { selectedTransport } from '../../../src/browser/transport.ts';
 (() => {
   const swScope = route("/"),
     swAllowedHostnames = ['localhost', '127.0.0.1'],
@@ -9,14 +10,16 @@ import { values, route } from 'build:invisiproxy';
       eu: 'socks5h://localhost:7000',
       jp: 'socks5h://localhost:7001',
     },
-    transportUrl = route("/libcurl/index.mjs"),
     storageId = `${values.storageNamespace}-storage`,
     storageObject = () => JSON.parse(localStorage.getItem(storageId)) || {},
     readStorage = (name) => storageObject()[name];
 
+  const transportName = selectedTransport(readStorage('Transport')),
+    transportUrl = route(`/${transportName}/index.mjs`);
+
   const getTransportOptions = () => {
     const options = { wisp: wispUrl };
-    if ('string' === typeof readStorage('UseSocks5'))
+    if (transportName === 'libcurl' && 'string' === typeof readStorage('UseSocks5'))
       options.proxy = proxyUrl[readStorage('UseSocks5')];
     return options;
   };

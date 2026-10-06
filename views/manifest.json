@@ -3,9 +3,9 @@
 	"name": "InvisiProxy LTS | Free Web Proxy Service",
 	"icons": [
 		{
-			"src": "https://invisiproxy.com/assets/img/icon.png",
+			"src": "assets/img/icon.png",
 			"type": "image/png",
-			"sizes": "300x300"
+			"sizes": "878x1262"
 		},
 		{
 			"src": "assets/ico/android-icon-36x36.png",
@@ -61,9 +61,6 @@
 		"proxy YouTube",
 		"bypass web filters",
 		"InvisiProxy",
-		"unblock Chromebook",
-		"TitaniumNetwork",
-		"TitaniumNetwork",
 		"fast proxy",
 		"secure proxy",
 		"anonymous browsing",

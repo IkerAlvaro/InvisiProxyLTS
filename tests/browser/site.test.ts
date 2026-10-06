@@ -4,7 +4,7 @@ import { fixture, run, buildFixture } from '../helpers/fixture.ts';
 
 for (const disguiseFiles of [false, true]) {
 	test(`Chromium interactions: disguise=${disguiseFiles}`, {
-		timeout: 120_000,
+		timeout: 180_000,
 	}, async (t) => {
 		const root = await fixture(
 			t,

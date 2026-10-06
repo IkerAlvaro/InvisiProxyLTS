@@ -1,14 +1,16 @@
 import type { JSX, ParentProps } from 'solid-js';
 import { renderToString, ssr } from 'solid-js/web';
-import { values, randomItem, inlineHtml, route } from '../site-values.ts';
+import { values, randomItem, inlineHtml, route } from '../site.ts';
 export {
 	values,
+	sites,
+	credits,
 	route,
-	getSplash,
 	ifSEO,
 	ifDisguise,
 	inlineHtml,
-} from '../site-values.ts';
+} from '../site.ts';
+export { getSplash } from '../obfuscation/masks.ts';
 
 function serializeHtml(html: string): JSX.Element {
 	return ssr(html) as unknown as JSX.Element;

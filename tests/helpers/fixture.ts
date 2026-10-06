@@ -13,6 +13,8 @@ import { fileURLToPath } from 'node:url';
 import type { TestContext } from 'node:test';
 import type settings from '../../config.json';
 import { spawn } from 'node:child_process';
+import { createServer } from 'node:net';
+import type { AddressInfo } from 'node:net';
 
 export const project = fileURLToPath(new URL('../../', import.meta.url));
 
@@ -51,11 +53,25 @@ export async function fixture(
 	return root;
 }
 
-export function run(root: string, args: string[], env: NodeJS.ProcessEnv = {}) {
+export async function run(
+	root: string,
+	args: string[],
+	env: NodeJS.ProcessEnv = {},
+	timeout = 120000
+) {
+	const reservation = createServer();
+	await new Promise<void>((resolve, reject) => {
+		reservation.once('error', reject);
+		reservation.listen(0, '127.0.0.1', resolve);
+	});
+	const port = (reservation.address() as AddressInfo).port;
+	await new Promise<void>((resolve, reject) =>
+		reservation.close((error) => (error ? reject(error) : resolve()))
+	);
 	return new Promise<string>((resolve, reject) => {
 		const childEnv: NodeJS.ProcessEnv = {
 			...process.env,
-			PORT: '18080',
+			PORT: String(port),
 			INVISIPROXY_VITE_DEV: '',
 			...env,
 		};
@@ -66,7 +82,7 @@ export function run(root: string, args: string[], env: NodeJS.ProcessEnv = {}) {
 			stdio: ['ignore', 'pipe', 'pipe'],
 		});
 		let output = '';
-		const timer = setTimeout(() => child.kill(), 90000);
+		const timer = setTimeout(() => child.kill(), timeout);
 		child.stdout.on('data', (data) => (output += data));
 		child.stderr.on('data', (data) => (output += data));
 		child.once('error', reject);

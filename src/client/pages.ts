@@ -1,62 +1,64 @@
 import { route } from './document-helpers.tsx';
 import type { PageDefinition } from './types';
-import PageTemplate from './pages/PageTemplate.tsx';
-import PageTemplateMetadata from './metadata/PageTemplate.tsx';
-import EntryPoint from './pages/EntryPoint.tsx';
-import EntryPointMetadata from './metadata/EntryPoint.tsx';
-import Loader from './pages/Loader.tsx';
-import LoaderMetadata from './metadata/Loader.tsx';
-import ScramjetError from './pages/ScramjetError.tsx';
-import ScramjetErrorMetadata from './metadata/ScramjetError.tsx';
-import Home from './pages/Home.tsx';
-import HomeMetadata from './metadata/Home.tsx';
-import DocumentationPage from './pages/DocumentationPage.tsx';
-import DocumentationPageMetadata from './metadata/DocumentationPage.tsx';
-import FAQPage from './pages/FAQPage.tsx';
-import FAQPageMetadata from './metadata/FAQPage.tsx';
-import NotFound from './pages/NotFound.tsx';
-import NotFoundMetadata from './metadata/NotFound.tsx';
-import ProxyFrame from './pages/ProxyFrame.tsx';
-import ProxyFrameMetadata from './metadata/ProxyFrame.tsx';
-import Credits from './pages/Credits.tsx';
-import CreditsMetadata from './metadata/Credits.tsx';
-import Privacy from './pages/Privacy.tsx';
-import PrivacyMetadata from './metadata/Privacy.tsx';
-import Partners from './pages/Partners.tsx';
-import PartnersMetadata from './metadata/Partners.tsx';
-import Icons from './pages/Icons.tsx';
-import IconsMetadata from './metadata/Icons.tsx';
-import Scramjet from './pages/Scramjet.tsx';
-import ScramjetMetadata from './metadata/Scramjet.tsx';
-import YouTube from './pages/YouTube.tsx';
-import YouTubeMetadata from './metadata/YouTube.tsx';
-import Applications from './pages/Applications.tsx';
-import ApplicationsMetadata from './metadata/Applications.tsx';
+import PageTemplate, {
+	Head as PageTemplateHead,
+} from './pages/PageTemplate.tsx';
+import EntryPoint, { Head as EntryPointHead } from './pages/EntryPoint.tsx';
+import Loader, { Head as LoaderHead } from './pages/Loader.tsx';
+import ScramjetError, {
+	Head as ScramjetErrorHead,
+} from './pages/ScramjetError.tsx';
+import Home, { Head as HomeHead } from './pages/Home.tsx';
+import DocumentationPage, {
+	Head as DocumentationPageHead,
+} from './pages/DocumentationPage.tsx';
+import FAQPage, { Head as FAQPageHead } from './pages/FAQPage.tsx';
+import NotFound, { Head as NotFoundHead } from './pages/NotFound.tsx';
+import ProxyFrame, { Head as ProxyFrameHead } from './pages/ProxyFrame.tsx';
+import Credits, { Head as CreditsHead } from './pages/Credits.tsx';
+import Privacy, { Head as PrivacyHead } from './pages/Privacy.tsx';
+import Partners, { Head as PartnersHead } from './pages/Partners.tsx';
+import Icons, { Head as IconsHead } from './pages/Icons.tsx';
+import Scramjet, { Head as ScramjetHead } from './pages/Scramjet.tsx';
+import Applications, {
+	Head as ApplicationsHead,
+} from './pages/Applications.tsx';
 
 export const pageDefinitions = {
 	'pages/misc/template.html': {
 		Page: PageTemplate,
-		Head: PageTemplateMetadata,
+		Head: PageTemplateHead,
 	},
 	'pages/misc/deobf/entry-point.html': {
 		Page: EntryPoint,
-		Head: EntryPointMetadata,
+		Head: EntryPointHead,
 		bodyStyle: 'background-color: #0d1117',
 	},
 	'pages/misc/deobf/loader.html': {
 		Page: Loader,
-		Head: LoaderMetadata,
+		Head: LoaderHead,
 		bodyStyle: 'background-color: #0d1117',
 	},
 	'pages/proxnav/scramjet-error.html': {
+		route: 'sjerror',
 		Page: ScramjetError,
-		Head: ScramjetErrorMetadata,
+		Head: ScramjetErrorHead,
 	},
-	'index.html': { Page: Home, Head: HomeMetadata, lang: 'en' },
-	'docs.html': { Page: DocumentationPage, Head: DocumentationPageMetadata },
+	'index.html': {
+		route: ['', 'links'],
+		Page: Home,
+		Head: HomeHead,
+		lang: 'en',
+	},
+	'docs.html': {
+		route: 'documentation',
+		Page: DocumentationPage,
+		Head: DocumentationPageHead,
+	},
 	'faq.html': {
+		route: 'questions',
 		Page: FAQPage,
-		Head: FAQPageMetadata,
+		Head: FAQPageHead,
 		bodyScripts: [
 			{
 				get src() {
@@ -66,19 +68,36 @@ export const pageDefinitions = {
 			},
 		],
 	},
-	'error.html': { Page: NotFound, Head: NotFoundMetadata },
-	'pages/frame.html': { Page: ProxyFrame, Head: ProxyFrameMetadata },
-	'pages/nav/credits.html': { Page: Credits, Head: CreditsMetadata },
-	'pages/nav/privacy.html': { Page: Privacy, Head: PrivacyMetadata },
-	'pages/nav/partners.html': { Page: Partners, Head: PartnersMetadata },
-	'pages/nav/icons.html': { Page: Icons, Head: IconsMetadata },
-	'pages/proxnav/scramjet.html': { Page: Scramjet, Head: ScramjetMetadata },
-	'pages/proxnav/preset/youtube.html': {
-		Page: YouTube,
-		Head: YouTubeMetadata,
+	'error.html': { route: 'test-404', Page: NotFound, Head: NotFoundHead },
+	'pages/frame.html': {
+		route: 's',
+		Page: ProxyFrame,
+		Head: ProxyFrameHead,
+	},
+	'pages/nav/credits.html': {
+		route: 'credits',
+		Page: Credits,
+		Head: CreditsHead,
+	},
+	'pages/nav/privacy.html': {
+		route: 'privacy',
+		Page: Privacy,
+		Head: PrivacyHead,
+	},
+	'pages/nav/partners.html': {
+		route: 'partners',
+		Page: Partners,
+		Head: PartnersHead,
+	},
+	'pages/nav/icons.html': { Page: Icons, Head: IconsHead },
+	'pages/proxnav/scramjet.html': {
+		route: ['browsing', 'scramjet'],
+		Page: Scramjet,
+		Head: ScramjetHead,
 	},
 	'pages/proxnav/preset/applications.html': {
+		route: 'apps',
 		Page: Applications,
-		Head: ApplicationsMetadata,
+		Head: ApplicationsHead,
 	},
 } satisfies Record<string, PageDefinition>;

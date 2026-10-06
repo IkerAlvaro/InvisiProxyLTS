@@ -1,4 +1,5 @@
 import { values, route, maskText } from 'build:invisiproxy';
+import { BareCompatibleClient } from '@mercuryworkshop/proxy-transports';
 /* -----------------------------------------------
 /* Authors: QuiteAFancyEmerald, Yoct, b4kt, and OlyB
 /* GNU Affero General Public License v3.0: https://www.gnu.org/licenses/agpl-3.0.en.html
@@ -355,39 +356,9 @@ const preparePage = async () => {
 
   // Object.freeze prevents goProx from accidentally being edited.
   const goProx = Object.freeze({
-    // `location.protocol + "//" + getDomain()` more like `location.origin`
-    // setAuthCookie("__cor_auth=1", false);
     scramjet: urlHandler(sjUrl),
 
     tru: sjPreset('https://truffled.lol/g'),
-
-    youtube: sjPreset('https://youtube.com'),
-
-    invidious: sjPreset('https://invidious.snopyta.org'),
-
-    chatgpt: sjPreset('https://chat.openai.com/chat'),
-
-    fmhy: sjPreset('https://fmhy.net'),
-
-    discord: sjPreset('https://discord.com/app'),
-
-    geforcenow: sjPreset('https://play.geforcenow.com/mall'),
-
-    spotify: sjPreset('https://open.spotify.com'),
-
-    tiktok: sjPreset('https://www.tiktok.com'),
-
-    animetsu: sjPreset('https://animetsu.net'),
-
-    twitter: sjPreset('https://twitter.com'),
-
-    twitch: sjPreset('https://www.twitch.tv'),
-
-    instagram: sjPreset('https://www.instagram.com'),
-
-    reddit: sjPreset('https://www.reddit.com'),
-
-    wikipedia: sjPreset('https://www.wikiwand.com'),
 
   });
 
@@ -435,6 +406,68 @@ const preparePage = async () => {
   };
 
   // Attach event listeners using goProx to specific app menus that need it.
+  const loadAppIcon = async (image, destination) => {
+    const cacheKey = `${values.storageNamespace}-app-icon-${destination}`;
+    const cacheLifetime = 7 * 24 * 60 * 60 * 1000;
+    try {
+      const cached = JSON.parse(localStorage.getItem(cacheKey));
+      if (cached?.data?.startsWith('data:image/') && Date.now() - cached.savedAt < cacheLifetime) {
+        image.src = cached.data;
+        return;
+      }
+    } catch {}
+
+    try {
+      if (!window.$invisiScramjet?.ready) {
+        await new Promise((resolve) =>
+          window.addEventListener('s-ready', resolve, { once: true })
+        );
+      }
+      const client = new BareCompatibleClient(window.$invisiScramjet.controller.transport);
+      const siteUrl = new URL(destination);
+      const fetchIcon = async (url) => {
+        if (!['https:', 'http:'].includes(url.protocol)) return null;
+        try {
+          const response = await client.fetch(url.href);
+          if (!response.ok || !response.headers.get('content-type')?.startsWith('image/')) return null;
+          return await response.blob();
+        } catch {
+          return null;
+        }
+      };
+
+      let blob = await fetchIcon(new URL(image.dataset.proxyIcon || '/favicon.ico', siteUrl));
+      if (!blob) {
+        const page = await client.fetch(siteUrl.href);
+        if (!page.ok) return;
+        const html = new DOMParser().parseFromString(await page.text(), 'text/html');
+        const icon = html.querySelector('link[rel~="icon"][href], link[rel="apple-touch-icon"][href]');
+        if (!icon) return;
+        const pageUrl = page.url || siteUrl.href;
+        const base = html.querySelector('base[href]');
+        blob = await fetchIcon(new URL(icon.getAttribute('href'), base ? new URL(base.getAttribute('href'), pageUrl) : pageUrl));
+      }
+      if (!blob) return;
+      const objectUrl = URL.createObjectURL(blob);
+      image.addEventListener('load', () => URL.revokeObjectURL(objectUrl), { once: true });
+      image.addEventListener('error', () => URL.revokeObjectURL(objectUrl), { once: true });
+      image.src = objectUrl;
+
+      // Keep small icons across visits, including before the proxy initializes.
+      if (blob.size <= 256 * 1024) {
+        const reader = new FileReader();
+        reader.addEventListener('load', () => {
+          try {
+            localStorage.setItem(cacheKey, JSON.stringify({ data: reader.result, savedAt: Date.now() }));
+          } catch {}
+        }, { once: true });
+        reader.readAsDataURL(blob);
+      }
+    } catch (error) {
+      console.warn('Unable to load application icon:', destination, error);
+    }
+  };
+
   const prSet = (id, type) => {
     const formElement = document.getElementById(id);
     if (!formElement) return;
@@ -542,22 +575,16 @@ const preparePage = async () => {
     });
   };
 
+  document.querySelectorAll('[data-app-url]').forEach((button) => {
+    const destination = button.dataset.appUrl;
+    if (button.tagName === 'BUTTON')
+      button.addEventListener('click', () => goProx.scramjet(destination, 'stealth'));
+    const image = button.querySelector('img[data-proxy-icon]');
+    if (image) loadAppIcon(image, destination);
+  });
+
   prSet('pr-sj', 'scramjet');
-  prSet('pr-yt', 'youtube');
-  prSet('pr-iv', 'invidious');
   prSet('pr-trl', 'tru');
-  prSet('pr-cg', 'chatgpt');
-  prSet('pr-fm', 'fmhy');
-  prSet('pr-dc', 'discord');
-  prSet('pr-gf', 'geforcenow');
-  prSet('pr-sp', 'spotify');
-  prSet('pr-tt', 'tiktok');
-  prSet('pr-ha', 'animetsu');
-  prSet('pr-tw', 'twitter');
-  prSet('pr-tc', 'twitch');
-  prSet('pr-ig', 'instagram');
-  prSet('pr-rt', 'reddit');
-  prSet('pr-wa', 'wikipedia');
 
   // Load the frame for stealth mode if it exists.
   const windowFrame = document.getElementById('frame');
@@ -642,7 +669,7 @@ const preparePage = async () => {
 
     if (navList) {
       // List items stored in JSON format will be returned as a JS object.
-      const data = await fetch(`${route("/assets/json/")}${filename}.json`, {
+      const data = await fetch(route(`/assets/json/${filename}.json`), {
         mode: 'same-origin',
       }).then((response) => response.json());
 
@@ -675,7 +702,7 @@ const preparePage = async () => {
               (credits = document.createElement('p')));
 
             a.href = '#';
-            img.src = `${route("/assets/img/")}${dir}/` + item.img;
+            img.src = route(`/assets/img/${dir}/${item.img}`);
             title.textContent = item.name;
             desc.textContent = item.description;
             credits.textContent = item.credits;
@@ -683,7 +710,7 @@ const preparePage = async () => {
             if (filename === 'par-nav') {
               if (item.credits === 'truf')
                 desc.innerHTML +=
-                  `<br>${maskText("Credits: Check out the full site at ")}<a target="_blank" href="${route("/truffled")}">${maskText("truffled.lol")}</a> //${maskText(" discord.gg/vVqY36mzvj")}`;
+                  `<br>${maskText("Credits: Check out the full site at ")}<a target="_blank" rel="noopener noreferrer" href="${route("/truffled")}">${maskText("truffled.lol")}</a> //${maskText(" discord.gg/vVqY36mzvj")}`;
             }
 
             a.appendChild(img);

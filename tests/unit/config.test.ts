@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 import test from 'node:test';
-import { fixture, run } from '../helpers/fixture.ts';
+import { fixture, project, run } from '../helpers/fixture.ts';
 
 test('config aliases and default pages agree with SEO and disguise modes', async (t) => {
 	for (const usingSEO of [true, false])
@@ -15,15 +15,25 @@ test('config aliases and default pages agree with SEO and disguise modes', async
 				'-e',
 				`
 import assert from 'node:assert/strict';
-import { pages, serverUrl, serverPort, getAltPrefix, externalPages, flatAltPaths } from './src/site-config.ts';
+import { serverUrl, serverPort } from './src/config.ts';
+import { aliasRoutes, getAltPrefix, getPathAliases } from './src/obfuscation/paths.ts';
+import { externalPages as links } from './src/server/links.ts';
+const { pages, links: externalPages } = aliasRoutes({ '': 'index.html', links: 'index.html', 'robots.txt': 'robots.txt' }, links);
 assert.equal(serverUrl.pathname, '/school/');
-assert.equal(serverPort, 18080);
-assert.equal(pages.default, ${JSON.stringify(disguiseFiles ? 'login' : 'index')});
-assert.equal(pages[${JSON.stringify(usingSEO ? 'partners' : 'interface')}], 'pages/nav/partners.html');
-assert.equal(getAltPrefix('wisp', serverUrl.pathname), ${JSON.stringify(usingSEO ? '/school/wisp/' : '/school/cron/')});
-assert.equal(externalPages.github[${JSON.stringify(usingSEO ? 'fastify' : 'fs')}], 'https://github.com/fastify/fastify');
+assert.equal(serverPort, Number(process.env.PORT));
+assert.equal(pages[''], 'index.html');
+const aliases = getPathAliases();
+assert.equal(pages[aliases.links || 'links'], 'index.html');
+if (!${usingSEO}) {
+  assert.notEqual(aliases.links, 'links');
+  assert.match(aliases.links, /^[A-Za-z]+$/);
+  assert.equal(new Set(Object.values(aliases)).size, Object.keys(aliases).length);
+}
+assert.equal(getAltPrefix('wisp', serverUrl.pathname), '/school/' + (aliases['prefixes/wisp'] || 'wisp') + '/');
+assert.equal(externalPages.github[(aliases['github/fastify'] || 'github/fastify').split('/').at(-1)], 'https://github.com/fastify/fastify');
 assert.equal('robots.txt' in pages, ${usingSEO});
-assert.equal(flatAltPaths['files/sw.js'], ${JSON.stringify(usingSEO ? 'sw.js' : 'service.js')});
+if (${usingSEO}) assert.deepEqual(aliases, {});
+else assert.match(aliases['files/sw.js'], /^[A-Za-z]+\\.js$/);
 `,
 			]);
 		}
@@ -33,7 +43,7 @@ test('invalid PORT values fail clearly before server startup', async (t) => {
 	const root = await fixture(t);
 	for (const PORT of ['0', '-1', '65536', 'abc', '1.5', ''])
 		await assert.rejects(
-			run(root, ['-e', "import('./src/site-config.ts')"], { PORT }),
+			run(root, ['-e', "import('./src/config.ts')"], { PORT }),
 			/PORT must be an integer/
 		);
 });
@@ -56,12 +66,11 @@ test('configured mirror files resolve from the project root or an absolute path,
 			'-e',
 			`
 import assert from 'node:assert/strict';
-import Fastify from 'fastify';
-import { registerLinkDispenser } from ${JSON.stringify(pathToFileURL(join(root, 'src/link-dispenser.ts')).href)};
+import { createLinkDispenser } from ${JSON.stringify(pathToFileURL(join(root, 'src/server/link-dispenser.ts')).href)};
+import { serve } from ${JSON.stringify(pathToFileURL(join(project, 'tests/helpers/http.ts')).href)};
 process.chdir('..');
-const app = Fastify();
+const app = await serve(createLinkDispenser());
 try {
- registerLinkDispenser(app, '/api/link');
  const response = await app.inject({ method: 'POST', url: '/api/link' });
  assert.equal(response.statusCode, 200);
  assert.ok(['https://first.example/', 'https://second.example/'].includes(response.json().link));

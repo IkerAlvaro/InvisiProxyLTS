@@ -1,4 +1,4 @@
-import { Cooking, route, values } from '../document-helpers.tsx';
+import { Cooking, Inline, route, values, SEO } from '../document-helpers.tsx';
 
 export default function EntryPoint() {
 	return (
@@ -10,11 +10,102 @@ export default function EntryPoint() {
 			<script
 				innerHTML={`
       localStorage.setItem('${values.storageNamespace}-loader-key', navigator.userAgent);
-      location.replace('${route('/index')}${values.development ? '' : `?cache=${values.cacheKey}`}');
     `}
 			/>
+			<Inline>
+				<script src={route('assets/js/loader.js', 'inline')} />
+			</Inline>
 			<Cooking />
 			<Cooking />
+		</>
+	);
+}
+
+export function Head() {
+	return (
+		<>
+			<title>Page Loader</title>
+			<meta charset="utf-8" />
+			<meta
+				name="viewport"
+				content="width=device-width, initial-scale=1.0, shrink-to-fit=no"
+			/>
+			<SEO>
+				<meta
+					name="theme-color"
+					media="(prefers-color-scheme: dark)"
+					content="#434c5e"
+				/>
+				<link
+					rel="apple-touch-icon"
+					sizes="57x57"
+					href={route('assets/ico/apple-icon-57x57.png')}
+				/>
+				<link
+					rel="apple-touch-icon"
+					sizes="60x60"
+					href={route('assets/ico/apple-icon-60x60.png')}
+				/>
+				<link
+					rel="apple-touch-icon"
+					sizes="72x72"
+					href={route('assets/ico/apple-icon-72x72.png')}
+				/>
+				<link
+					rel="apple-touch-icon"
+					sizes="76x76"
+					href={route('assets/ico/apple-icon-76x76.png')}
+				/>
+				<link
+					rel="apple-touch-icon"
+					sizes="114x114"
+					href={route('assets/ico/apple-icon-114x114.png')}
+				/>
+				<link
+					rel="apple-touch-icon"
+					sizes="120x120"
+					href={route('assets/ico/apple-icon-120x120.png')}
+				/>
+				<link
+					rel="apple-touch-icon"
+					sizes="144x144"
+					href={route('assets/ico/apple-icon-144x144.png')}
+				/>
+				<link
+					rel="apple-touch-icon"
+					sizes="152x152"
+					href={route('assets/ico/apple-icon-152x152.png')}
+				/>
+				<link
+					rel="apple-touch-icon"
+					sizes="180x180"
+					href={route('assets/ico/apple-icon-180x180.png')}
+				/>
+				<link
+					rel="icon"
+					type="image/png"
+					sizes="192x192"
+					href={route('assets/ico/android-icon-192x192.png')}
+				/>
+				<link
+					rel="icon"
+					type="image/png"
+					sizes="32x32"
+					href={route('assets/ico/favicon-32x32.png')}
+				/>
+				<link
+					rel="icon"
+					type="image/png"
+					sizes="96x96"
+					href={route('assets/ico/favicon-96x96.png')}
+				/>
+				<link
+					rel="icon"
+					type="image/png"
+					sizes="16x16"
+					href={route('assets/ico/favicon-16x16.png')}
+				/>
+			</SEO>
 		</>
 	);
 }
