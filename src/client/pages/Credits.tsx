@@ -68,17 +68,21 @@ export default function Credits() {
 																}
 															</td>
 															<td>
-																<a
-																	href={
-																		person.url
-																	}
-																	target="_blank"
-																	rel="noopener noreferrer"
-																>
-																	{
-																		person.contact
-																	}
-																</a>
+																{person.url ? (
+																	<a
+																		href={
+																			person.url
+																		}
+																		target="_blank"
+																		rel="noopener noreferrer"
+																	>
+																		{
+																			person.contact
+																		}
+																	</a>
+																) : (
+																	person.contact
+																)}
 															</td>
 														</tr>
 													)

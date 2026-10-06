@@ -119,7 +119,19 @@ export const partners = Object.freeze([
 	{ name: 'Truffled', url: 'https://truffled.lol', newtab: false },
 ]);
 
-export const credits = Object.freeze([
+interface CreditPerson {
+	name: string;
+	contributions?: string;
+	url?: string;
+	contact?: string;
+}
+
+interface CreditSection {
+	title: string;
+	people: CreditPerson[];
+}
+
+export const credits = Object.freeze<CreditSection[]>([
 	{
 		title: 'Main Developers',
 		people: [
@@ -200,6 +212,98 @@ export const credits = Object.freeze([
 				url: 'https://manjit.dev',
 				contact: '@manjit',
 			},
+		],
+	},
+	{
+		title: 'Shoutouts',
+		people: [
+			{
+				name: 'Divide',
+				contributions: 'Chatbox, Proxy/Web Developer',
+			},
+			{
+				name: 'ProgrammerIn-wonderland',
+				contributions: 'Mercury Workshop, Developer',
+			},
+			{
+				name: 'MikeLime',
+				contributions:
+					'Old Co-Owner of TitaniumNetwork & Mass Proxy Site Maker, Web Developer, and Software Developer',
+			},
+			{
+				name: 'SexyDuceDuce',
+				contributions: 'Proxy and Web Developer',
+			},
+			{
+				name: 'LQ16',
+				contributions: 'Creator of TN, Retired',
+			},
+			{
+				name: 'Shirt',
+				contributions:
+					'Old Co-Owner of TN, Everything Developer And King Of Pokemon',
+			},
+			{
+				name: 'Soup',
+				contact: 'Cat Lady hehe',
+			},
+			{
+				name: 'aub',
+				contributions: 'Owner of TitaniumNetwork',
+			},
+			{
+				name: 'Binary Person',
+				contact: 'pretty pog',
+			},
+			{
+				name: 'Pillow',
+				contributions: 'Hosting Contributor, Developer',
+			},
+			{
+				name: 'Navyyy',
+			},
+			{
+				name: 'luphoria',
+				contributions: 'Mercury Workshop, Developer',
+			},
+			{
+				name: 'trentwiles',
+				contributions: 'Developer',
+			},
+			{
+				name: 'Degen-dev',
+				contributions: 'Developer',
+			},
+			{
+				name: 'B3ATDROP3R',
+			},
+			{
+				name: 'Catolan',
+			},
+			{
+				name: 'Nautica',
+				contact: 'Reinin',
+			},
+			{
+				name: 'LinuxSperm',
+				contributions: 'Contributor',
+			},
+			{
+				name: 'H',
+				contact: 'Not Speed',
+			},
+			{
+				name: 'BananaVeyLover',
+			},
+			{
+				name: 'IronApple',
+				contact: 'The Apple Addict',
+			},
+			{
+				name: 'Synaptic',
+				contributions: 'Synaptic',
+				contact: 'Synaptic',
+			}
 		],
 	},
 ]);
