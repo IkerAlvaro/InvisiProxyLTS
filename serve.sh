@@ -11,4 +11,5 @@ else
 fi
 
 echo "[InvisiProxy] Starting server on PORT=${PORT:-8080}..."
-exec pnpm start
+# Use manual-start: image already built in Dockerfile, no need to rebuild at runtime
+exec pnpm run manual-start
