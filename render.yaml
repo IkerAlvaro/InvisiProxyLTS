@@ -11,8 +11,3 @@ services:
     envVars:
       - key: NODE_ENV
         value: production
-      - key: PORT
-        fromService:
-          type: web
-          name: invisi-proxy-lts
-          property: port
