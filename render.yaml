@@ -1,8 +1,18 @@
 services:
   - type: web
+    name: invisi-proxy-lts
     runtime: docker
-    name: invisi-lts
-    repo: https://github.com/InvisiProxy/InvisiProxyLTS
-    region: oregon
     plan: free
+    region: oregon
     branch: master
+    dockerfilePath: ./Dockerfile
+    dockerContext: .
+    healthCheckPath: /
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        fromService:
+          type: web
+          name: invisi-proxy-lts
+          property: port
